@@ -4,6 +4,14 @@ An iOS app that teaches guitar and bass, from naming open strings to improvising
 
 This is a native SwiftUI port of an HTML/JS prototype. The prototype still lives in `prototype/` and is the reference for design and behavior.
 
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/images/signal-path.png" alt="Home, the Signal Path learning path" /><br/><sub>Home, the Signal Path</sub></td>
+    <td align="center" width="33%"><img src="docs/images/scale-explorer.png" alt="Scale Explorer with a live fretboard" /><br/><sub>Scale Explorer</sub></td>
+    <td align="center" width="33%"><img src="docs/images/chord-library.png" alt="Chord Library with a chord diagram" /><br/><sub>Chord Library</sub></td>
+  </tr>
+</table>
+
 ## Layout
 
 - `StringTheoryCore/` is a Swift package with the music-theory engine and the fretboard geometry. No UIKit or SwiftUI, so it runs under `swift test` on its own.
