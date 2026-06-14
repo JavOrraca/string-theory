@@ -1,2 +1,3 @@
-# string-theory
-An iOS app for learning guitar and bass, from fretboard notes and tab reading to chords, scales, and improvisation.
+# String Theory
+
+String Theory is an iOS app for learning to play guitar or bass. It follows a progressive curriculum starting with fretboard fundamentals (notes, string/fret relationships, and tab reading), then chords, then scales and key relationships - building toward the ability to improvise a solo using only notes that fit the underlying key. Supports both guitar and bass, with right- and left-handed fretboard orientations.
