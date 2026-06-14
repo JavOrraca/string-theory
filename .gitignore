@@ -1,0 +1,30 @@
+# ── macOS ──
+.DS_Store
+
+# ── Xcode ──
+build/
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+*.moved-aside
+*.pbxuser
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ── Swift Package Manager ──
+.build/
+.swiftpm/
+Package.resolved
+
+# ── Generated Xcode project ──
+# project.yml is the source of truth; run `xcodegen generate` to (re)create it.
+*.xcodeproj
+
+# ── Fastlane / tooling output ──
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output

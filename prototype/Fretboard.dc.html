@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</helmet>
+<div style="position:relative; width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; font-family:'JetBrains Mono', ui-monospace, monospace;">
+
+  <div style="flex:1; display:flex; align-items:stretch; min-height:0;">
+
+    <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+      <div style="{{ labelColStyle }}">
+        <sc-for list="{{ stringLabels }}" as="s" hint-placeholder-count="6">
+          <div style="{{ s.style }}">{{ s.note }}</div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <div ref="{{ boardRef }}" style="{{ boardStyle }}">
+      <sc-for list="{{ stringLines }}" as="l" hint-placeholder-count="6">
+        <div style="{{ l.style }}"></div>
+      </sc-for>
+      <sc-for list="{{ fretLines }}" as="l" hint-placeholder-count="6">
+        <div style="{{ l.style }}"></div>
+      </sc-for>
+      <sc-for list="{{ inlays }}" as="d" hint-placeholder-count="3">
+        <div style="{{ d.style }}"></div>
+      </sc-for>
+      <sc-for list="{{ markerEls }}" as="m" hint-placeholder-count="0">
+        <div style="{{ m.style }}">{{ m.label }}</div>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ showNums }}" hint-placeholder-val="{{ true }}">
+    <div style="{{ numRowStyle }}">
+      <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+        <div style="{{ numSpacerStyle }}"></div>
+      </sc-if>
+      <div style="{{ numTrackStyle }}">
+        <sc-for list="{{ fretNums }}" as="n" hint-placeholder-count="5">
+          <div style="{{ n.style }}">{{ n.text }}</div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:360,&quot;height&quot;:190},&quot;strings&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6},&quot;openNotes&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[&quot;E&quot;,&quot;A&quot;,&quot;D&quot;,&quot;G&quot;,&quot;B&quot;,&quot;E&quot;]},&quot;frets&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5},&quot;startFret&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0},&quot;lefty&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false},&quot;markers&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[]},&quot;showLabels&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;showNums&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;showInlays&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true}}">
+class Component extends DCLogic {
+  state = { w: 0, h: 0 };
+
+  // ── palette ──
+  GREEN = 'oklch(0.85 0.17 152)';
+  CYAN  = 'oklch(0.84 0.11 205)';
+  RED   = 'oklch(0.64 0.16 25)';
+
+  componentDidMount() {
+    const measure = () => {
+      const el = this._board;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const w = Math.round(r.width), h = Math.round(r.height);
+      if (w && (Math.abs(w - this.state.w) > 1.5 || Math.abs(h - this.state.h) > 1.5)) {
+        this.setState({ w, h });
+      }
+    };
+    this._measure = measure;
+    requestAnimationFrame(measure);
+    requestAnimationFrame(() => requestAnimationFrame(measure));
+    if (this._board && 'ResizeObserver' in window) {
+      this._ro = new ResizeObserver(measure);
+      this._ro.observe(this._board);
+    }
+    window.addEventListener('resize', measure);
+  }
+  componentWillUnmount() {
+    if (this._ro) this._ro.disconnect();
+    window.removeEventListener('resize', this._measure);
+  }
+
+  // geometry constants (percent of board)
+  GUT = 13;   // gutter before nut (open-string zone)
+  RM = 3;     // right margin
+  PAD = 13;   // vertical padding (top/bottom string inset)
+
+  _topPct(i, N) {
+    // i = string index, 0 = low (bottom). Returns center top%.
+    return this.PAD + ((N - 1 - i) / Math.max(1, N - 1)) * (100 - 2 * this.PAD);
+  }
+  _span() { return 100 - this.GUT - this.RM; }
+  _fretLineX(col, count) { return this.GUT + (col / count) * this._span(); }
+  _fretCenterX(f, count) { return this.GUT + ((f - 0.5) / count) * this._span(); }
+  _openX() { return this.GUT * 0.45; }
+  _mirror(x, lefty) { return lefty ? 100 - x : x; }
+
+  _markerD() {
+    const { w, h } = this.state;
+    const N = this.props.strings ?? 6;
+    const count = this.props.frets ?? 5;
+    if (!w || !h) return 19;
+    const spaceW = (this._span() / 100) * w / count;
+    const gapH = ((100 - 2 * this.PAD) / 100) * h / Math.max(1, N - 1);
+    return Math.max(13, Math.min(34, Math.min(spaceW, gapH) * 0.64));
+  }
+
+  renderVals() {
+    const P = this.props;
+    const N = P.strings ?? 6;
+    const count = P.frets ?? 5;
+    const startFret = P.startFret ?? 0;
+    const lefty = P.lefty ?? false;
+    const showLabels = P.showLabels ?? true;
+    const showNums = P.showNums ?? true;
+    const showInlays = P.showInlays ?? true;
+    const openNotes = P.openNotes ?? ['E', 'A', 'D', 'G', 'B', 'E'];
+    const markers = P.markers ?? [];
+    const D = this._markerD();
+    const G = this.GREEN, C = this.CYAN, R = this.RED;
+
+    // string lines
+    const stringLines = [];
+    for (let i = 0; i < N; i++) {
+      const top = this._topPct(i, N);
+      const thick = 0.8 + ((N - 1 - i) / Math.max(1, N - 1)) * 1.4; // low strings thicker
+      stringLines.push({
+        style: {
+          position: 'absolute', left: 0, right: 0, top: top + '%',
+          height: thick + 'px', transform: 'translateY(-50%)',
+          background: 'oklch(0.74 0.04 160 / 0.45)',
+          boxShadow: '0 0 3px oklch(0.74 0.05 160 / 0.25)',
+        },
+      });
+    }
+
+    // fret lines (col 0 = nut)
+    const fretLines = [];
+    for (let col = 0; col <= count; col++) {
+      const isNut = col === 0 && startFret === 0;
+      const x = this._mirror(this._fretLineX(col, count), lefty);
+      fretLines.push({
+        style: {
+          position: 'absolute', top: (this.PAD - 2) + '%', height: (100 - 2 * (this.PAD - 2)) + '%',
+          left: x + '%', width: isNut ? '2.5px' : '1px', transform: 'translateX(-50%)',
+          background: isNut ? 'oklch(0.86 0.06 160 / 0.85)' : 'oklch(0.62 0.02 200 / 0.32)',
+          boxShadow: isNut ? '0 0 6px oklch(0.85 0.08 160 / 0.4)' : 'none',
+          borderRadius: '2px',
+        },
+      });
+    }
+
+    // inlays
+    const inlays = [];
+    if (showInlays) {
+      const single = [3, 5, 7, 9, 15, 17, 19, 21];
+      for (let col = 1; col <= count; col++) {
+        const abs = startFret + col;
+        const x = this._mirror(this._fretCenterX(col, count), lefty);
+        const dot = (topPct) => ({
+          style: {
+            position: 'absolute', left: x + '%', top: topPct + '%', transform: 'translate(-50%,-50%)',
+            width: '5px', height: '5px', borderRadius: '999px',
+            background: 'oklch(0.6 0.03 200 / 0.45)',
+          },
+        });
+        if (abs === 12 || abs === 24) { inlays.push(dot(36), dot(64)); }
+        else if (single.includes(abs)) { inlays.push(dot(50)); }
+      }
+    }
+
+    // markers
+    const fs = Math.round(D * 0.44);
+    const markerEls = markers.map((m) => {
+      const top = this._topPct(m.string, N);
+      let x;
+      if (m.fret <= 0 && (m.kind === 'open' || m.kind === 'muted')) {
+        x = this._mirror(this._openX(), lefty);
+      } else if (m.fret <= 0) {
+        x = this._mirror(this._openX(), lefty);
+      } else {
+        x = this._mirror(this._fretCenterX(m.fret - startFret, count), lefty);
+      }
+      const base = {
+        position: 'absolute', left: x + '%', top: top + '%', transform: 'translate(-50%,-50%)',
+        width: D + 'px', height: D + 'px', borderRadius: '999px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: fs + 'px', fontWeight: 600, letterSpacing: '-0.02em',
+        fontFamily: "'JetBrains Mono', monospace", zIndex: 5, boxSizing: 'border-box',
+        transition: 'box-shadow 0.18s ease, transform 0.12s ease',
+        // full default set so React always overrides leftovers when reusing a node by index
+        background: 'transparent', color: G, border: 'none', boxShadow: 'none',
+      };
+      let style, label = m.label != null ? String(m.label) : '';
+      if (m.kind === 'muted') {
+        style = { ...base, width: (D * 0.66) + 'px', height: (D * 0.66) + 'px', color: R,
+          fontSize: (D * 0.7) + 'px', fontWeight: 700, background: 'transparent', boxShadow: 'none' };
+        label = '\u00d7';
+      } else if (m.kind === 'root') {
+        style = { ...base, background: C, color: 'oklch(0.18 0.03 220)',
+          boxShadow: `0 0 12px ${C}, 0 0 4px ${C}`, border: 'none' };
+      } else if (m.kind === 'active') {
+        style = { ...base, background: G, color: 'oklch(0.16 0.03 150)',
+          boxShadow: `0 0 16px ${G}, 0 0 6px ${G}`, border: 'none' };
+      } else if (m.kind === 'open') {
+        style = { ...base, background: 'transparent', color: G,
+          border: `1.5px solid ${G}`, boxShadow: `0 0 6px oklch(0.85 0.17 152 / 0.4)` };
+      } else if (m.kind === 'ghost') {
+        style = { ...base, width: (D * 0.4) + 'px', height: (D * 0.4) + 'px',
+          background: 'oklch(0.6 0.02 200 / 0.35)', boxShadow: 'none' };
+        label = '';
+      } else { // safe
+        style = { ...base, background: 'color-mix(in oklch, ' + G + ' 13%, transparent)', color: G,
+          border: `1.5px solid ${G}`, boxShadow: `0 0 7px oklch(0.85 0.17 152 / 0.35)` };
+      }
+      return { style, label };
+    });
+
+    // string labels
+    const stringLabels = [];
+    for (let i = 0; i < N; i++) {
+      const top = this._topPct(i, N);
+      stringLabels.push({
+        note: openNotes[i] ?? '',
+        style: {
+          position: 'absolute', top: top + '%', transform: 'translateY(-50%)',
+          [lefty ? 'left' : 'right']: '2px',
+          fontSize: '11px', fontWeight: 600, color: 'oklch(0.7 0.04 160 / 0.7)',
+          fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.02em',
+        },
+      });
+    }
+    const labelColStyle = {
+      position: 'relative', width: '24px', flexShrink: 0,
+      order: lefty ? 2 : 0,
+    };
+
+    // fret numbers
+    const fretNums = [];
+    for (let col = 1; col <= count; col++) {
+      const abs = startFret + col;
+      const x = this._mirror(this._fretCenterX(col, count), lefty);
+      fretNums.push({
+        text: String(abs),
+        style: {
+          position: 'absolute', left: x + '%', transform: 'translateX(-50%)',
+          fontSize: '10px', color: 'oklch(0.6 0.02 200 / 0.6)',
+          fontFamily: "'JetBrains Mono', monospace",
+        },
+      });
+    }
+    const numRowStyle = { display: 'flex', height: '16px', marginTop: '3px' };
+    const numSpacerStyle = { width: '24px', flexShrink: 0, order: lefty ? 2 : 0 };
+    const numTrackStyle = { position: 'relative', flex: 1, minWidth: 0 };
+
+    return {
+      boardRef: (el) => { this._board = el; },
+      boardStyle: { position: 'relative', flex: 1, minWidth: 0, height: '100%' },
+      showLabels, showNums,
+      stringLines, fretLines, inlays, markerEls,
+      stringLabels, labelColStyle,
+      fretNums, numRowStyle, numSpacerStyle, numTrackStyle,
+    };
+  }
+}
+</script>
+</body>
+</html>

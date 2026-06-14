@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:oklch(0.12 0.012 250);}
+  *{box-sizing:border-box;}
+  @keyframes stBlink{0%,45%{opacity:1}55%,100%{opacity:0.15}}
+  @keyframes stScan{0%{transform:translateY(0)}100%{transform:translateY(6px)}}
+  ::-webkit-scrollbar{width:0;height:0;}
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:oklch(0.12 0.012 250); font-family:'Hanken Grotesk',system-ui,sans-serif; color:oklch(0.93 0.01 220); padding:48px 40px 96px; background-image:radial-gradient(1200px 500px at 50% -10%, oklch(0.85 0.17 152 / 0.05), transparent 70%);">
+
+  <!-- ── Masthead ── -->
+  <div style="max-width:1320px; margin:0 auto 14px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+    <div>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <div style="width:11px; height:11px; border-radius:999px; background:oklch(0.85 0.17 152); box-shadow:0 0 10px oklch(0.85 0.17 152), 0 0 3px oklch(0.85 0.17 152); animation:stBlink 1.8s infinite steps(1);"></div>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.32em; text-transform:uppercase; color:oklch(0.8 0.12 152);">System Online</span>
+      </div>
+      <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:58px; line-height:0.96; letter-spacing:-0.02em; margin:0; color:oklch(0.96 0.01 200);">String&nbsp;Theory</h1>
+      <p style="margin:14px 0 0; max-width:560px; font-size:16px; line-height:1.5; color:oklch(0.72 0.02 230);">An iOS app that takes you from naming open strings to improvising in key. Design system &amp; first interactive screens — guitar &amp; bass, right- or left-handed.</p>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.9; color:oklch(0.55 0.02 230); text-align:right;">
+      <div>REV&nbsp;&nbsp;0.1 / FIRST PASS</div>
+      <div>PLATFORM&nbsp;&nbsp;iOS · SwiftUI-bound</div>
+      <div>DATE&nbsp;&nbsp;2026.06.13</div>
+    </div>
+  </div>
+
+  <!-- ── Live control bar ── -->
+  <div style="max-width:1320px; margin:0 auto 56px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; padding:16px 20px; background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.18); border-radius:14px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:oklch(0.6 0.02 230);">Live preview &nbsp;·&nbsp; flip these to mirror every diagram</span>
+    <div style="flex:1;"></div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.6 0.02 230); text-transform:uppercase; letter-spacing:0.14em;">Instrument</span>
+      <div style="display:flex; gap:4px; padding:4px; background:oklch(0.13 0.012 250); border:1px solid oklch(0.5 0.03 160 / 0.18); border-radius:10px;">
+        <button onClick="{{ pickGuitar }}" style="{{ segInstGuitar }}">Guitar</button>
+        <button onClick="{{ pickBass }}" style="{{ segInstBass }}">Bass</button>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.6 0.02 230); text-transform:uppercase; letter-spacing:0.14em;">Handedness</span>
+      <div style="display:flex; gap:4px; padding:4px; background:oklch(0.13 0.012 250); border:1px solid oklch(0.5 0.03 160 / 0.18); border-radius:10px;">
+        <button onClick="{{ pickRight }}" style="{{ segHandRight }}">Right</button>
+        <button onClick="{{ pickLeft }}" style="{{ segHandLeft }}">Left</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ DESIGN SYSTEM ════════ -->
+  <div style="max-width:1320px; margin:0 auto 28px; display:flex; align-items:center; gap:16px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:oklch(0.8 0.12 152);">01 · Design System</span>
+    <div style="flex:1; height:1px; background:oklch(0.5 0.03 160 / 0.2);"></div>
+  </div>
+
+  <div style="max-width:1320px; margin:0 auto 72px; display:grid; grid-template-columns:repeat(12,1fr); gap:20px;">
+
+    <!-- palette -->
+    <div style="grid-column:span 5; background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:18px; padding:24px;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:oklch(0.6 0.02 230); margin-bottom:18px;">Palette</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <sc-for list="{{ palette }}" as="c" hint-placeholder-count="6">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div style="{{ c.swatch }}"></div>
+            <div style="flex:1;">
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:oklch(0.92 0.01 220);">{{ c.name }}</div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.55 0.02 230);">{{ c.role }}</div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:oklch(0.5 0.02 230);">{{ c.val }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- type -->
+    <div style="grid-column:span 4; background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:18px; padding:24px; display:flex; flex-direction:column;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:oklch(0.6 0.02 230); margin-bottom:18px;">Type</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; line-height:1; letter-spacing:-0.02em; color:oklch(0.96 0.01 200);">Space Grotesk</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.7 0.1 152); margin:6px 0 18px;">DISPLAY · HEADINGS · LABELS</div>
+      <div style="font-family:'Hanken Grotesk',sans-serif; font-size:17px; line-height:1.45; color:oklch(0.9 0.01 220);">Hanken Grotesk keeps body copy and lesson text highly legible during practice.</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.7 0.1 152); margin:6px 0 18px;">BODY · INSTRUCTIONS</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-weight:500; font-size:20px; color:oklch(0.9 0.01 220); letter-spacing:0.02em;">3 · 5 · 7 · 9 · 12</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.7 0.1 152); margin-top:6px;">MONO · FRETS · TAB · DATA</div>
+    </div>
+
+    <!-- markers + components -->
+    <div style="grid-column:span 3; background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:18px; padding:24px;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:oklch(0.6 0.02 230); margin-bottom:18px;">Note markers</div>
+      <div style="display:flex; flex-direction:column; gap:13px;">
+        <sc-for list="{{ markerLegend }}" as="m" hint-placeholder-count="5">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="{{ m.dot }}">{{ m.glyph }}</div>
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:oklch(0.92 0.01 220);">{{ m.name }}</div>
+              <div style="font-size:11px; color:oklch(0.58 0.02 230);">{{ m.use }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 02 · ONBOARDING ════════ -->
+  <div style="max-width:1320px; margin:0 auto 8px; display:flex; align-items:center; gap:16px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:oklch(0.8 0.12 152);">02 · Onboarding</span>
+    <div style="flex:1; height:1px; background:oklch(0.5 0.03 160 / 0.2);"></div>
+  </div>
+  <p style="max-width:680px; margin:0 auto 36px; font-size:15px; line-height:1.55; color:oklch(0.66 0.02 230); text-align:left;">Instrument and handedness are chosen once and drive every diagram in the app. The cards below are live — tapping them updates the controls above and mirrors all fretboards.</p>
+
+  <div style="display:flex; gap:44px; flex-wrap:wrap; justify-content:center; align-items:flex-start; margin-bottom:80px;">
+
+    <!-- Welcome -->
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Welcome</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px), radial-gradient(700px 360px at 50% 30%, oklch(0.85 0.17 152 / 0.08), transparent 70%); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 36px; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif; text-align:center;">
+          <div style="display:flex; align-items:center; gap:9px; margin-bottom:40px;">
+            <div style="width:9px; height:9px; border-radius:999px; background:oklch(0.85 0.17 152); box-shadow:0 0 10px oklch(0.85 0.17 152); animation:stBlink 1.8s infinite steps(1);"></div>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.3em; color:oklch(0.8 0.12 152);">SYSTEM READY</span>
+          </div>
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:42px; line-height:0.98; letter-spacing:-0.02em; margin:0; color:oklch(0.97 0.01 200);">String<br>Theory</h2>
+          <p style="margin:22px 0 0; font-size:16px; line-height:1.5; color:oklch(0.7 0.02 230);">Learn the fretboard. Read tab. Build chords. Then play a solo that always fits the key.</p>
+          <div style="height:48px;"></div>
+          <button style="appearance:none; border:none; cursor:pointer; width:100%; padding:17px; border-radius:14px; background:oklch(0.85 0.17 152); color:oklch(0.16 0.03 150); font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; box-shadow:0 0 22px oklch(0.85 0.17 152 / 0.4);">Begin calibration</button>
+          <div style="margin-top:18px; font-size:14px; color:oklch(0.58 0.02 230);">Already playing? <span style="color:oklch(0.8 0.12 152); font-weight:600;">Sign in</span></div>
+        </div>
+      </x-import>
+    </div>
+
+    <!-- Instrument -->
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Instrument · interactive</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px); display:flex; flex-direction:column; padding:62px 24px 36px; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif;">
+          <div style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.16em; color:oklch(0.6 0.02 230); margin-bottom:8px;">
+            <span style="color:oklch(0.85 0.17 152);">STEP 1 / 2</span><span>· SETUP</span>
+          </div>
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; line-height:1.05; letter-spacing:-0.01em; margin:0 0 8px;">Pick your instrument</h2>
+          <p style="margin:0 0 28px; font-size:15px; line-height:1.5; color:oklch(0.66 0.02 230);">This sets your tuning and how many strings every diagram shows.</p>
+
+          <button onClick="{{ pickGuitar }}" style="{{ cardGuitar }}">
+            <div style="width:54px; height:54px; border-radius:12px; background:oklch(0.13 0.012 250); border:1px solid oklch(0.5 0.03 160 / 0.2); display:flex; flex-direction:column; justify-content:center; gap:5px; padding:0 9px; flex-shrink:0;">
+              <div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.6);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.6);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.6);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.6);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.6);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.6);"></div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px;">Guitar</div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:oklch(0.6 0.02 230); margin-top:2px;">6 strings · E A D G B E</div>
+            </div>
+            <div style="{{ radioGuitar }}"></div>
+          </button>
+          <div style="height:14px;"></div>
+          <button onClick="{{ pickBass }}" style="{{ cardBass }}">
+            <div style="width:54px; height:54px; border-radius:12px; background:oklch(0.13 0.012 250); border:1px solid oklch(0.5 0.03 160 / 0.2); display:flex; flex-direction:column; justify-content:center; gap:7px; padding:0 9px; flex-shrink:0;">
+              <div style="height:2.5px; background:oklch(0.74 0.05 160 / 0.6);"></div><div style="height:2.5px; background:oklch(0.74 0.05 160 / 0.6);"></div><div style="height:2.5px; background:oklch(0.74 0.05 160 / 0.6);"></div><div style="height:2.5px; background:oklch(0.74 0.05 160 / 0.6);"></div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px;">Bass</div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:oklch(0.6 0.02 230); margin-top:2px;">4 strings · E A D G</div>
+            </div>
+            <div style="{{ radioBass }}"></div>
+          </button>
+
+          <div style="flex:1;"></div>
+          <button style="appearance:none; border:none; cursor:pointer; width:100%; padding:16px; border-radius:14px; background:oklch(0.85 0.17 152); color:oklch(0.16 0.03 150); font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; box-shadow:0 0 18px oklch(0.85 0.17 152 / 0.35);">Continue</button>
+        </div>
+      </x-import>
+    </div>
+
+    <!-- Handedness -->
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Handedness · interactive</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px); display:flex; flex-direction:column; padding:62px 24px 36px; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif;">
+          <div style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.16em; color:oklch(0.6 0.02 230); margin-bottom:8px;">
+            <span style="color:oklch(0.85 0.17 152);">STEP 2 / 2</span><span>· SETUP</span>
+          </div>
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; line-height:1.05; letter-spacing:-0.01em; margin:0 0 8px;">Which hand frets?</h2>
+          <p style="margin:0 0 28px; font-size:15px; line-height:1.5; color:oklch(0.66 0.02 230);">Diagrams mirror so the neck reads exactly how you hold it.</p>
+
+          <button onClick="{{ pickRight }}" style="{{ cardRight }}">
+            <div style="width:54px; height:40px; border-radius:9px; background:oklch(0.13 0.012 250); border:1px solid oklch(0.5 0.03 160 / 0.2); display:flex; align-items:center; flex-shrink:0; padding:0 6px; gap:5px;">
+              <div style="width:2.5px; height:28px; background:oklch(0.86 0.06 160 / 0.8); box-shadow:0 0 5px oklch(0.85 0.08 160 / 0.5); border-radius:2px;"></div>
+              <div style="flex:1; display:flex; flex-direction:column; gap:4px;"><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.5);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.5);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.5);"></div></div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px;">Right-handed</div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:oklch(0.6 0.02 230); margin-top:2px;">Nut on the left · low string at bottom</div>
+            </div>
+            <div style="{{ radioRight }}"></div>
+          </button>
+          <div style="height:14px;"></div>
+          <button onClick="{{ pickLeft }}" style="{{ cardLeft }}">
+            <div style="width:54px; height:40px; border-radius:9px; background:oklch(0.13 0.012 250); border:1px solid oklch(0.5 0.03 160 / 0.2); display:flex; align-items:center; flex-shrink:0; padding:0 6px; gap:5px;">
+              <div style="flex:1; display:flex; flex-direction:column; gap:4px;"><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.5);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.5);"></div><div style="height:1.5px; background:oklch(0.74 0.05 160 / 0.5);"></div></div>
+              <div style="width:2.5px; height:28px; background:oklch(0.86 0.06 160 / 0.8); box-shadow:0 0 5px oklch(0.85 0.08 160 / 0.5); border-radius:2px;"></div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px;">Left-handed</div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:oklch(0.6 0.02 230); margin-top:2px;">Nut on the right · fully mirrored</div>
+            </div>
+            <div style="{{ radioLeft }}"></div>
+          </button>
+
+          <div style="margin-top:26px; padding:14px 16px; border-radius:12px; background:oklch(0.13 0.012 250); border:1px solid oklch(0.5 0.03 200 / 0.18); display:flex; gap:11px; align-items:center;">
+            <div style="width:8px; height:8px; border-radius:999px; background:oklch(0.84 0.11 205); box-shadow:0 0 8px oklch(0.84 0.11 205); flex-shrink:0;"></div>
+            <span style="font-size:13px; line-height:1.4; color:oklch(0.72 0.02 230);">Try the <b style="color:oklch(0.84 0.11 205);">Handedness</b> control at the top — every fretboard on this page flips with it.</span>
+          </div>
+
+          <div style="flex:1;"></div>
+          <button style="appearance:none; border:none; cursor:pointer; width:100%; padding:16px; border-radius:14px; background:oklch(0.85 0.17 152); color:oklch(0.16 0.03 150); font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; box-shadow:0 0 18px oklch(0.85 0.17 152 / 0.35);">Enter the path</button>
+        </div>
+      </x-import>
+    </div>
+  </div>
+
+  <!-- ════════ 03 · HOME ════════ -->
+  <div style="max-width:1320px; margin:0 auto 8px; display:flex; align-items:center; gap:16px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:oklch(0.8 0.12 152);">03 · Home — Learning Path</span>
+    <div style="flex:1; height:1px; background:oklch(0.5 0.03 160 / 0.2);"></div>
+  </div>
+  <p style="max-width:680px; margin:0 auto 36px; font-size:15px; line-height:1.55; color:oklch(0.66 0.02 230);">Two takes on the 5-stage journey. <b style="color:oklch(0.82 0.12 152);">Signal Path</b> reads as a vertical climb with glowing nodes; <b style="color:oklch(0.82 0.12 152);">Mission Console</b> frames each stage as a spacecraft module with LED progress meters.</p>
+
+  <div style="display:flex; gap:44px; flex-wrap:wrap; justify-content:center; align-items:flex-start; margin-bottom:80px;">
+
+    <!-- Metaphor A: Signal Path -->
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Option A · Signal Path</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px); display:flex; flex-direction:column; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif;">
+          <div style="padding:60px 24px 18px; flex-shrink:0;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.16em; color:oklch(0.6 0.02 230); margin-bottom:6px;">STANDARD TUNING · 440Hz</div>
+            <div style="display:flex; align-items:flex-end; justify-content:space-between;">
+              <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; letter-spacing:-0.01em; margin:0;">Your Path</h2>
+              <div style="text-align:right;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; color:oklch(0.85 0.17 152); line-height:1;">{{ overallPct }}%</div><div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:oklch(0.58 0.02 230);">COMPLETE</div></div>
+            </div>
+            <div style="margin-top:14px; height:5px; border-radius:999px; background:oklch(0.2 0.018 250); overflow:hidden;"><div style="{{ overallBar }}"></div></div>
+          </div>
+          <div style="flex:1; overflow:auto; padding:8px 22px 16px;">
+            <sc-for list="{{ stages }}" as="st" hint-placeholder-count="5">
+              <div style="display:flex; gap:15px; align-items:stretch;">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div style="{{ st.node }}">{{ st.glyph }}</div>
+                  <sc-if value="{{ st.notLast }}" hint-placeholder-val="{{ true }}"><div style="{{ st.connector }}"></div></sc-if>
+                </div>
+                <div style="{{ st.card }}; margin-bottom:14px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                    <span style="{{ st.titleStyle }}">{{ st.title }}</span>
+                    <span style="{{ st.statusStyle }}">{{ st.statusText }}</span>
+                  </div>
+                  <p style="margin:5px 0 0; font-size:13px; line-height:1.4; color:oklch(0.64 0.02 230);">{{ st.sub }}</p>
+                  <sc-if value="{{ st.showMeter }}" hint-placeholder-val="{{ true }}">
+                    <div style="margin-top:11px; height:4px; border-radius:999px; background:oklch(0.22 0.018 250); overflow:hidden;"><div style="{{ st.meterFillStyle }}"></div></div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex-shrink:0; display:flex; padding:9px 14px 26px; gap:2px; background:oklch(0.155 0.014 250); border-top:1px solid oklch(0.5 0.03 160 / 0.16);">
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 18L11 11L18 4" stroke="oklch(0.85 0.17 152)" stroke-width="1.6"/><circle cx="4" cy="18" r="2.4" fill="oklch(0.85 0.17 152)"/><circle cx="11" cy="11" r="2.4" fill="oklch(0.85 0.17 152)"/><circle cx="18" cy="4" r="2.4" fill="oklch(0.85 0.17 152)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.85 0.17 152);">PATH</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="7" cy="7" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="15" cy="7" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="7" cy="15" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="15" cy="15" r="2.2" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">CHORDS</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="13" width="3" height="6" rx="1" fill="oklch(0.55 0.02 230)"/><rect x="8.5" y="9" width="3" height="10" rx="1" fill="oklch(0.55 0.02 230)"/><rect x="14" y="5" width="3" height="14" rx="1" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">SCALES</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M6 4L18 11L6 18Z" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">SOLO</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <!-- Metaphor B: Mission Console -->
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Option B · Mission Console</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px); display:flex; flex-direction:column; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif;">
+          <div style="padding:60px 24px 18px; flex-shrink:0; border-bottom:1px solid oklch(0.5 0.03 160 / 0.14);">
+            <div style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.16em; color:oklch(0.6 0.02 230); margin-bottom:12px;"><div style="width:7px; height:7px; border-radius:999px; background:oklch(0.85 0.17 152); box-shadow:0 0 8px oklch(0.85 0.17 152); animation:stBlink 1.8s infinite steps(1);"></div><span>CURRICULUM · 5 MODULES</span></div>
+            <div style="display:flex; align-items:center; gap:18px;">
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:44px; line-height:0.9; color:oklch(0.85 0.17 152); text-shadow:0 0 18px oklch(0.85 0.17 152 / 0.4);">{{ overallPct }}<span style="font-size:22px;">%</span></div>
+              <div style="flex:1;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:oklch(0.9 0.01 220);">Mission progress</div><div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.6 0.02 230); margin-top:2px;">1 of 5 modules cleared</div></div>
+            </div>
+          </div>
+          <div style="flex:1; overflow:auto; padding:16px 20px;">
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <sc-for list="{{ stages }}" as="st" hint-placeholder-count="5">
+                <div style="{{ st.card }}; display:flex; flex-direction:column; gap:11px;">
+                  <div style="display:flex; align-items:center; gap:13px;">
+                    <div style="{{ st.node }}">{{ st.glyph }}</div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="{{ st.titleStyle }}">{{ st.title }}</div>
+                      <div style="font-size:12px; line-height:1.35; color:oklch(0.62 0.02 230); margin-top:2px;">{{ st.sub }}</div>
+                    </div>
+                    <span style="{{ st.statusStyle }}">{{ st.moduleStatus }}</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="flex:1; height:8px; border-radius:3px; background:oklch(0.13 0.012 250); border:1px solid oklch(0.5 0.03 160 / 0.14); overflow:hidden; padding:1px;"><div style="{{ st.meterFillStyle }}"></div></div>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.6 0.02 230); min-width:34px; text-align:right;">{{ st.pct }}%</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex-shrink:0; display:flex; padding:9px 14px 26px; gap:2px; background:oklch(0.155 0.014 250); border-top:1px solid oklch(0.5 0.03 160 / 0.16);">
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 18L11 11L18 4" stroke="oklch(0.85 0.17 152)" stroke-width="1.6"/><circle cx="4" cy="18" r="2.4" fill="oklch(0.85 0.17 152)"/><circle cx="11" cy="11" r="2.4" fill="oklch(0.85 0.17 152)"/><circle cx="18" cy="4" r="2.4" fill="oklch(0.85 0.17 152)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.85 0.17 152);">PATH</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="7" cy="7" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="15" cy="7" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="7" cy="15" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="15" cy="15" r="2.2" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">CHORDS</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="13" width="3" height="6" rx="1" fill="oklch(0.55 0.02 230)"/><rect x="8.5" y="9" width="3" height="10" rx="1" fill="oklch(0.55 0.02 230)"/><rect x="14" y="5" width="3" height="14" rx="1" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">SCALES</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M6 4L18 11L6 18Z" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">SOLO</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+  </div>
+
+  <!-- ════════ 04 · LESSON ════════ -->
+  <div style="max-width:1320px; margin:0 auto 8px; display:flex; align-items:center; gap:16px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:oklch(0.8 0.12 152);">04 · Lesson — Fretboard + Tab</span>
+    <div style="flex:1; height:1px; background:oklch(0.5 0.03 160 / 0.2);"></div>
+  </div>
+  <p style="max-width:680px; margin:0 auto 36px; font-size:15px; line-height:1.55; color:oklch(0.66 0.02 230);">The interactive fretboard and the tab staff stay locked together. Press <b style="color:oklch(0.82 0.12 152);">Play riff</b> — the note lights up on the neck and the matching column lights up in the tab, in time with the synthesized audio.</p>
+
+  <div style="display:flex; gap:44px; flex-wrap:wrap; justify-content:center; align-items:flex-start; margin-bottom:80px;">
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Lesson · interactive + audio</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px); display:flex; flex-direction:column; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif;">
+          <!-- nav -->
+          <div style="padding:58px 20px 14px; flex-shrink:0; display:flex; align-items:center; gap:14px;">
+            <div style="width:38px; height:38px; border-radius:999px; background:oklch(0.19 0.018 250); border:1px solid oklch(0.5 0.03 160 / 0.18); display:flex; align-items:center; justify-content:center;"><svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5L2 7.5l5.5 6" stroke="oklch(0.82 0.02 230)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div style="flex:1;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.6 0.02 230);">STAGE 02 · TABS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px;">Lesson 2.3</div></div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.85 0.17 152);">3 / 6</div>
+          </div>
+          <div style="flex:1; overflow:auto; padding:6px 20px 20px;">
+            <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; letter-spacing:-0.01em; margin:0 0 8px;">Read the riff</h2>
+            <p style="margin:0 0 20px; font-size:14px; line-height:1.5; color:oklch(0.68 0.02 230);">Each number is a fret on that string. Watch the neck light up as the tab plays — that link is the whole skill.</p>
+
+            <!-- fretboard -->
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.58 0.02 230); margin-bottom:8px;">FRETBOARD</div>
+            <div style="position:relative; height:172px; background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:16px; margin-bottom:22px;">
+              <dc-import name="Fretboard" strings="{{ strings }}" open-notes="{{ openNotes }}" lefty="{{ lefty }}" frets="{{ five }}" start-fret="{{ zero }}" markers="{{ lessonMarkers }}" style="{{ fbInset }}" hint-size="100%,100%"></dc-import>
+            </div>
+
+            <!-- tab -->
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.58 0.02 230); margin-bottom:8px; display:flex; justify-content:space-between;"><span>TABLATURE · {{ riffName }}</span><span style="color:oklch(0.6 0.02 230);">♩ = 110</span></div>
+            <div style="background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:16px; padding:16px 14px;">
+              <sc-for list="{{ tabRows }}" as="row" hint-placeholder-count="6">
+                <div style="display:flex; align-items:center; gap:10px; height:28px;">
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:oklch(0.6 0.04 160 / 0.8); width:14px; text-align:center;">{{ row.note }}</span>
+                  <div style="flex:1; position:relative; display:flex; align-items:center; height:100%;">
+                    <div style="position:absolute; left:0; right:0; top:50%; height:1px; background:oklch(0.5 0.03 160 / 0.22);"></div>
+                    <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="12">
+                      <div style="flex:1; display:flex; align-items:center; justify-content:center; position:relative; z-index:1;">
+                        <sc-if value="{{ c.has }}" hint-placeholder-val="{{ true }}"><div style="{{ c.numStyle }}">{{ c.fret }}</div></sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <!-- transport -->
+          <div style="flex-shrink:0; padding:14px 20px 30px; border-top:1px solid oklch(0.5 0.03 160 / 0.16); background:oklch(0.155 0.014 250); display:flex; align-items:center; gap:16px;">
+            <div style="text-align:center;"><div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:oklch(0.85 0.17 152); line-height:1;">{{ stepReadout }}</div><div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:oklch(0.58 0.02 230); letter-spacing:0.1em;">STEP</div></div>
+            <button onClick="{{ toggleRiff }}" style="{{ riffBtnStyle }}">{{ riffPlayLabel }}</button>
+          </div>
+        </div>
+      </x-import>
+    </div>
+  </div>
+
+  <!-- ════════ 05 · CHORD LIBRARY ════════ -->
+  <div style="max-width:1320px; margin:0 auto 8px; display:flex; align-items:center; gap:16px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:oklch(0.8 0.12 152);">05 · Chord Library</span>
+    <div style="flex:1; height:1px; background:oklch(0.5 0.03 160 / 0.2);"></div>
+  </div>
+  <p style="max-width:680px; margin:0 auto 36px; font-size:15px; line-height:1.55; color:oklch(0.66 0.02 230);">Tap any chord to load its diagram. Each dot is labelled with the note it sounds — tying the shape back to the fretboard notes already learned. Rings are open strings, <span style="color:oklch(0.78 0.12 25);">×</span> means don't play that string.</p>
+
+  <div style="display:flex; gap:44px; flex-wrap:wrap; justify-content:center; align-items:flex-start; margin-bottom:80px;">
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Chords · interactive</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px); display:flex; flex-direction:column; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif;">
+          <div style="padding:58px 24px 12px; flex-shrink:0;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.6 0.02 230);">STAGE 03 · CHORDS</div>
+            <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; letter-spacing:-0.01em; margin:4px 0 0;">Chord Library</h2>
+          </div>
+          <div style="flex:1; overflow:auto; padding:6px 20px 16px;">
+            <!-- diagram -->
+            <div style="background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:18px; padding:18px; margin-bottom:18px;">
+              <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:14px;">
+                <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:38px; line-height:0.9; color:oklch(0.95 0.01 200);">{{ chordName }}</div><div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; color:oklch(0.6 0.02 230); margin-top:4px; text-transform:uppercase;">{{ chordQuality }} · guitar voicing</div></div>
+                <div style="text-align:right;"><div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:oklch(0.58 0.02 230); letter-spacing:0.1em;">NOTES</div><div style="font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:600; color:oklch(0.84 0.11 205); margin-top:2px;">{{ chordNotesStr }}</div></div>
+              </div>
+              <div style="position:relative; height:190px;">
+                <dc-import name="Fretboard" strings="{{ six }}" open-notes="{{ guitarOpen }}" lefty="{{ lefty }}" frets="{{ five }}" start-fret="{{ zero }}" markers="{{ chordMarkers }}" style="{{ fbInset }}" hint-size="100%,100%"></dc-import>
+              </div>
+            </div>
+            <!-- chord grid -->
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.58 0.02 230); margin-bottom:10px;">ALL CHORDS · TAP TO LOAD</div>
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:9px;">
+              <sc-for list="{{ chordList }}" as="ch" hint-placeholder-count="10">
+                <button onClick="{{ ch.onClick }}" style="{{ ch.style }}">{{ ch.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex-shrink:0; display:flex; padding:9px 14px 26px; gap:2px; background:oklch(0.155 0.014 250); border-top:1px solid oklch(0.5 0.03 160 / 0.16);">
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 18L11 11L18 4" stroke="oklch(0.55 0.02 230)" stroke-width="1.6"/><circle cx="4" cy="18" r="2.4" fill="oklch(0.55 0.02 230)"/><circle cx="11" cy="11" r="2.4" fill="oklch(0.55 0.02 230)"/><circle cx="18" cy="4" r="2.4" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">PATH</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="7" cy="7" r="2.2" fill="oklch(0.85 0.17 152)"/><circle cx="15" cy="7" r="2.2" fill="oklch(0.85 0.17 152)"/><circle cx="7" cy="15" r="2.2" fill="oklch(0.85 0.17 152)"/><circle cx="15" cy="15" r="2.2" fill="oklch(0.85 0.17 152)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.85 0.17 152);">CHORDS</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="13" width="3" height="6" rx="1" fill="oklch(0.55 0.02 230)"/><rect x="8.5" y="9" width="3" height="10" rx="1" fill="oklch(0.55 0.02 230)"/><rect x="14" y="5" width="3" height="14" rx="1" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">SCALES</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M6 4L18 11L6 18Z" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">SOLO</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+  </div>
+
+  <!-- ════════ 06 · SCALE EXPLORER ════════ -->
+  <div style="max-width:1320px; margin:0 auto 8px; display:flex; align-items:center; gap:16px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:oklch(0.8 0.12 152);">06 · Scale Explorer</span>
+    <div style="flex:1; height:1px; background:oklch(0.5 0.03 160 / 0.2);"></div>
+  </div>
+  <p style="max-width:680px; margin:0 auto 36px; font-size:15px; line-height:1.55; color:oklch(0.66 0.02 230);">Pick a key and a scale — the whole neck redraws live. <span style="color:oklch(0.84 0.11 205);">Cyan</span> marks the root; green marks every other scale degree. Each note shows its degree number so patterns connect back to keys and chords.</p>
+
+  <div style="display:flex; gap:44px; flex-wrap:wrap; justify-content:center; align-items:flex-start; margin-bottom:80px;">
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Scales · interactive</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px); display:flex; flex-direction:column; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif;">
+          <div style="padding:58px 22px 12px; flex-shrink:0;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.6 0.02 230);">STAGE 04 · SCALES &amp; KEYS</div>
+            <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-top:4px;">
+              <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; letter-spacing:-0.01em; margin:0;">Scale Explorer</h2>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:oklch(0.84 0.11 205);">{{ scaleKey }} {{ scaleTypeLabel }}</div>
+            </div>
+          </div>
+          <div style="flex:1; overflow:auto; padding:8px 22px 16px;">
+            <!-- key selector -->
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.58 0.02 230); margin-bottom:8px;">KEY</div>
+            <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; margin-bottom:16px;">
+              <sc-for list="{{ keyChips }}" as="kc" hint-placeholder-count="12">
+                <button onClick="{{ kc.onClickScale }}" style="{{ kc.scaleStyle }}">{{ kc.k }}</button>
+              </sc-for>
+            </div>
+            <!-- scale type -->
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.58 0.02 230); margin-bottom:8px;">SCALE</div>
+            <div style="display:flex; gap:7px; flex-wrap:wrap; margin-bottom:20px;">
+              <sc-for list="{{ scaleTypes }}" as="ty" hint-placeholder-count="4">
+                <button onClick="{{ ty.onClickScale }}" style="{{ ty.scaleStyle }}">{{ ty.label }}</button>
+              </sc-for>
+            </div>
+            <!-- fretboard -->
+            <div style="position:relative; height:200px; background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:16px; margin-bottom:20px;">
+              <dc-import name="Fretboard" strings="{{ strings }}" open-notes="{{ openNotes }}" lefty="{{ lefty }}" frets="{{ twelve }}" start-fret="{{ zero }}" markers="{{ scaleMarkers }}" style="{{ fbInset }}" hint-size="100%,100%"></dc-import>
+            </div>
+            <!-- notes -->
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.58 0.02 230); margin-bottom:9px;">SCALE DEGREES</div>
+            <div style="display:flex; gap:7px; flex-wrap:wrap; margin-bottom:18px;">
+              <sc-for list="{{ scaleNotes }}" as="sn" hint-placeholder-count="5">
+                <div style="{{ sn.chipStyle }}"><span style="{{ sn.degStyle }}">{{ sn.degree }}</span><span style="{{ sn.noteStyle }}">{{ sn.note }}</span></div>
+              </sc-for>
+            </div>
+            <div style="padding:14px 16px; border-radius:13px; background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:13px; color:oklch(0.7 0.02 230);">Chords that live here</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:600; color:oklch(0.85 0.17 152);">{{ relatedChords }}</span>
+            </div>
+          </div>
+          <div style="flex-shrink:0; display:flex; padding:9px 14px 26px; gap:2px; background:oklch(0.155 0.014 250); border-top:1px solid oklch(0.5 0.03 160 / 0.16);">
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 18L11 11L18 4" stroke="oklch(0.55 0.02 230)" stroke-width="1.6"/><circle cx="4" cy="18" r="2.4" fill="oklch(0.55 0.02 230)"/><circle cx="11" cy="11" r="2.4" fill="oklch(0.55 0.02 230)"/><circle cx="18" cy="4" r="2.4" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">PATH</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="7" cy="7" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="15" cy="7" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="7" cy="15" r="2.2" fill="oklch(0.55 0.02 230)"/><circle cx="15" cy="15" r="2.2" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">CHORDS</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="13" width="3" height="6" rx="1" fill="oklch(0.85 0.17 152)"/><rect x="8.5" y="9" width="3" height="10" rx="1" fill="oklch(0.85 0.17 152)"/><rect x="14" y="5" width="3" height="14" rx="1" fill="oklch(0.85 0.17 152)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.85 0.17 152);">SCALES</span></div>
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:5px 0;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M6 4L18 11L6 18Z" fill="oklch(0.55 0.02 230)"/></svg><span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:oklch(0.55 0.02 230);">SOLO</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+  </div>
+
+  <!-- ════════ 07 · SOLO PRACTICE ════════ -->
+  <div style="max-width:1320px; margin:0 auto 8px; display:flex; align-items:center; gap:16px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:oklch(0.8 0.12 152);">07 · Solo Practice</span>
+    <div style="flex:1; height:1px; background:oklch(0.5 0.03 160 / 0.2);"></div>
+  </div>
+  <p style="max-width:680px; margin:0 auto 36px; font-size:15px; line-height:1.55; color:oklch(0.66 0.02 230);">The payoff. Press <b style="color:oklch(0.82 0.12 152);">Play backing</b> — a synthesized loop runs in your key while every safe note glows on the neck. As each chord comes round, its root pulses bright so you can target it. Any lit note will sound right.</p>
+
+  <div style="display:flex; gap:44px; flex-wrap:wrap; justify-content:center; align-items:flex-start; margin-bottom:80px;">
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:oklch(0.6 0.02 230);">▹ Solo · interactive + audio</span>
+      <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ on }}" hint-size="402px,874px">
+        <div style="height:100%; background:oklch(0.145 0.014 250); background-image:repeating-linear-gradient(0deg, oklch(0 0 0 / 0.16) 0px, oklch(0 0 0 / 0.16) 1px, transparent 1px, transparent 3px); display:flex; flex-direction:column; color:oklch(0.93 0.01 220); font-family:'Hanken Grotesk',sans-serif;">
+          <div style="padding:58px 22px 12px; flex-shrink:0;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.6 0.02 230);">STAGE 05 · IMPROVISATION</div>
+            <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; letter-spacing:-0.01em; margin:4px 0 0;">Solo Practice</h2>
+          </div>
+          <div style="flex:1; overflow:auto; padding:8px 22px 16px;">
+            <!-- selectors -->
+            <div style="display:flex; gap:16px; margin-bottom:16px;">
+              <div style="flex:1; min-width:0;">
+                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.58 0.02 230); margin-bottom:8px;">KEY</div>
+                <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;">
+                  <sc-for list="{{ keyChips }}" as="kc" hint-placeholder-count="12">
+                    <button onClick="{{ kc.onClickSolo }}" style="{{ kc.soloStyle }}">{{ kc.k }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:7px; flex-wrap:wrap; margin-bottom:18px;">
+              <sc-for list="{{ scaleTypes }}" as="ty" hint-placeholder-count="4">
+                <button onClick="{{ ty.onClickSolo }}" style="{{ ty.soloStyle }}">{{ ty.label }}</button>
+              </sc-for>
+            </div>
+            <!-- fretboard -->
+            <div style="position:relative; height:208px; background:oklch(0.17 0.016 250); border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:16px; margin-bottom:14px;">
+              <dc-import name="Fretboard" strings="{{ strings }}" open-notes="{{ openNotes }}" lefty="{{ lefty }}" frets="{{ twelve }}" start-fret="{{ zero }}" markers="{{ soloMarkers }}" style="{{ fbInset }}" hint-size="100%,100%"></dc-import>
+            </div>
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:20px; font-size:13px; color:oklch(0.68 0.02 230);">
+              <div style="width:14px; height:14px; border-radius:999px; background:color-mix(in oklch, oklch(0.85 0.17 152) 13%, transparent); border:1.5px solid oklch(0.85 0.17 152); flex-shrink:0;"></div>
+              <span>Every glowing note is safe over this backing track.</span>
+            </div>
+            <!-- backing progression -->
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; color:oklch(0.58 0.02 230); margin-bottom:9px;">BACKING LOOP</div>
+            <div style="display:flex; gap:7px;">
+              <sc-for list="{{ soloProgView }}" as="pc" hint-placeholder-count="4">
+                <div style="{{ pc.style }}">{{ pc.name }}</div>
+              </sc-for>
+            </div>
+          </div>
+          <!-- transport -->
+          <div style="flex-shrink:0; padding:14px 22px 30px; border-top:1px solid oklch(0.5 0.03 160 / 0.16); background:oklch(0.155 0.014 250); display:flex; align-items:center; gap:16px;">
+            <div style="text-align:center; min-width:54px;"><div style="font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:oklch(0.85 0.17 152); line-height:1;">{{ soloKey }}</div><div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:oklch(0.58 0.02 230); letter-spacing:0.1em; margin-top:2px;">KEY · {{ soloScaleLabel }}</div></div>
+            <button onClick="{{ toggleSolo }}" style="{{ soloBtnStyle }}">{{ soloPlayLabel }}</button>
+          </div>
+        </div>
+      </x-import>
+    </div>
+  </div>
+
+  <!-- closing note -->
+  <div style="max-width:1320px; margin:0 auto; padding:28px 26px; border:1px solid oklch(0.5 0.03 160 / 0.16); border-radius:18px; background:oklch(0.16 0.015 250); display:flex; gap:24px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+    <div style="max-width:640px;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.24em; text-transform:uppercase; color:oklch(0.8 0.12 152); margin-bottom:10px;">Handoff notes</div>
+      <p style="margin:0; font-size:14px; line-height:1.6; color:oklch(0.7 0.02 230);">All diagrams render from one parametric fretboard engine (string count, tuning, handedness, marker set) — a clean map to a SwiftUI <span style="font-family:'JetBrains Mono',monospace; color:oklch(0.84 0.11 205);">Canvas</span> view. Layouts respect iOS safe areas, 44pt targets, and tab/nav conventions. Audio is synthesized in-browser as a stand-in for the real engine.</p>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.9; color:oklch(0.55 0.02 230); text-align:right;">
+      <div>NEXT · finger numbers on chords</div>
+      <div>NEXT · scale-pattern boxes (CAGED)</div>
+      <div>NEXT · per-stage lesson counts</div>
+    </div>
+  </div>
+
+  <!-- screen sections appended below -->
+  <div id="st-screens"></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = {
+    M: null,
+    instrument: 'guitar',
+    lefty: false,
+    // scale explorer
+    scaleKey: 'E', scaleType: 'minorPent',
+    // chord library
+    chordId: 'C',
+    // lesson
+    lessonPlaying: false, lessonStep: -1,
+    // solo
+    soloKey: 'A', soloScale: 'minorPent', soloPlaying: false, soloChord: -1,
+  };
+
+  GREEN = 'oklch(0.85 0.17 152)';
+  CYAN  = 'oklch(0.84 0.11 205)';
+  RED   = 'oklch(0.64 0.16 25)';
+
+  async componentDidMount() {
+    const M = await import('./music.js');
+    this.setState({ M });
+  }
+  componentWillUnmount() { this._stopAll(); }
+
+  // ── audio ──
+  _ensureAC() {
+    if (!this.ac) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      this.ac = new AC();
+      this.master = this.ac.createGain();
+      this.master.gain.value = 0.85;
+      this.master.connect(this.ac.destination);
+    }
+    if (this.ac.state === 'suspended') this.ac.resume();
+    return this.ac;
+  }
+  _noteFreq(name, octave) {
+    const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const midi = (octave + 1) * 12 + NOTES.indexOf(name);
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+  _pluck(freq, when, dur, peak = 0.2, type = 'sawtooth') {
+    const ac = this.ac;
+    const o = ac.createOscillator(); o.type = type; o.frequency.value = freq;
+    const f = ac.createBiquadFilter(); f.type = 'lowpass';
+    f.frequency.setValueAtTime(Math.min(6000, freq * 8), when);
+    f.frequency.exponentialRampToValueAtTime(Math.max(400, freq * 2), when + dur);
+    f.Q.value = 1.2;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.linearRampToValueAtTime(peak, when + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0008, when + dur);
+    o.connect(f); f.connect(g); g.connect(this.master);
+    o.start(when); o.stop(when + dur + 0.05);
+  }
+  _pad(freq, when, dur, peak = 0.05) {
+    const ac = this.ac;
+    const o = ac.createOscillator(); o.type = 'triangle'; o.frequency.value = freq;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.linearRampToValueAtTime(peak, when + 0.08);
+    g.gain.setValueAtTime(peak, when + dur - 0.2);
+    g.gain.exponentialRampToValueAtTime(0.0008, when + dur);
+    o.connect(g); g.connect(this.master);
+    o.start(when); o.stop(when + dur + 0.05);
+  }
+  _kick(when) {
+    const ac = this.ac;
+    const o = ac.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(120, when);
+    o.frequency.exponentialRampToValueAtTime(45, when + 0.12);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.linearRampToValueAtTime(0.5, when + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0008, when + 0.18);
+    o.connect(g); g.connect(this.master);
+    o.start(when); o.stop(when + 0.2);
+  }
+
+  // ── lesson riff ──
+  toggleRiff = () => {
+    if (this.state.lessonPlaying) { this._stopRiff(); return; }
+    const M = this.state.M; if (!M) return;
+    this._ensureAC();
+    this.setState({ lessonPlaying: true });
+    const tuning = M.TUNINGS.guitar;
+    const steps = M.RIFF.steps;
+    const stepDur = 0.30;
+    let i = 0;
+    const tick = () => {
+      if (!this.state.lessonPlaying) return;
+      const s = steps[i % steps.length];
+      const base = tuning[s.string].freq;
+      const freq = M.freqAt(base, s.fret);
+      this._pluck(freq, this.ac.currentTime + 0.01, stepDur * 1.6, 0.22);
+      this.setState({ lessonStep: i % steps.length });
+      i++;
+      this._riffTimer = setTimeout(tick, stepDur * 1000);
+    };
+    tick();
+  };
+  _stopRiff() {
+    clearTimeout(this._riffTimer);
+    this.setState({ lessonPlaying: false, lessonStep: -1 });
+  }
+
+  // ── solo backing ──
+  toggleSolo = () => {
+    if (this.state.soloPlaying) { this._stopSolo(); return; }
+    const M = this.state.M; if (!M) return;
+    this._ensureAC();
+    this.setState({ soloPlaying: true });
+    const prog = M.backingProgression(this.state.soloKey, this.state.soloScale);
+    const barDur = 1.7;
+    let bar = 0;
+    const NOTES = M.NOTES;
+    const playBar = () => {
+      if (!this.state.soloPlaying) return;
+      const ch = prog[bar % prog.length];
+      const t = this.ac.currentTime + 0.04;
+      const thirdSemi = ch.minor ? 3 : 4;
+      const rootMid = this._noteFreq(ch.root, 3);
+      const third = this._noteFreq(NOTES[(NOTES.indexOf(ch.root) + thirdSemi) % 12], 3);
+      const fifth = this._noteFreq(NOTES[(NOTES.indexOf(ch.root) + 7) % 12], 3);
+      this._pad(rootMid, t, barDur * 0.96, 0.045);
+      this._pad(third, t, barDur * 0.96, 0.038);
+      this._pad(fifth, t, barDur * 0.96, 0.038);
+      const bassFreq = this._noteFreq(ch.root, 2);
+      this._pluck(bassFreq, t, 0.5, 0.16);
+      this._pluck(bassFreq, t + barDur * 0.5, 0.45, 0.14);
+      this._kick(t); this._kick(t + barDur * 0.5);
+      this.setState({ soloChord: bar % prog.length });
+      bar++;
+      this._soloTimer = setTimeout(playBar, barDur * 1000);
+    };
+    playBar();
+  };
+  _stopSolo() {
+    clearTimeout(this._soloTimer);
+    this.setState({ soloPlaying: false, soloChord: -1 });
+  }
+  _stopAll() { this._stopRiff(); this._stopSolo(); }
+
+  // play a single note (tap-to-hear on solo fretboard tones handled via markers tap not wired; keep helper)
+  _previewNote(freq) { this._ensureAC(); this._pluck(freq, this.ac.currentTime + 0.01, 0.6, 0.2); }
+
+  _chordChip(active) {
+    return {
+      appearance: 'none', cursor: 'pointer', fontFamily: "'Space Grotesk',sans-serif",
+      fontWeight: 600, fontSize: '17px', padding: '12px 0', borderRadius: '12px',
+      background: active ? 'color-mix(in oklch,' + this.GREEN + ' 16%,transparent)' : 'oklch(0.2 0.018 250)',
+      color: active ? this.GREEN : 'oklch(0.82 0.02 230)',
+      border: active ? `1px solid ${this.GREEN}` : '1px solid oklch(0.5 0.03 160 / 0.16)',
+      boxShadow: active ? `0 0 14px oklch(0.85 0.17 152 / 0.3)` : 'none',
+      transition: 'all 0.14s ease',
+    };
+  }
+  _progChip(active) {
+    return {
+      flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: '9px',
+      fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: '15px',
+      background: active ? this.GREEN : 'oklch(0.2 0.018 250)',
+      color: active ? 'oklch(0.16 0.03 150)' : 'oklch(0.6 0.02 230)',
+      border: '1px solid ' + (active ? this.GREEN : 'oklch(0.5 0.03 160 / 0.14)'),
+      boxShadow: active ? `0 0 16px oklch(0.85 0.17 152 / 0.45)` : 'none',
+      transition: 'all 0.14s ease', letterSpacing: '0.02em',
+    };
+  }
+  _keyChip(active) {
+    return {
+      appearance: 'none', cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace",
+      fontWeight: 600, fontSize: '13px', minWidth: '38px', padding: '8px 4px', borderRadius: '9px',
+      background: active ? this.CYAN : 'oklch(0.2 0.018 250)',
+      color: active ? 'oklch(0.18 0.03 220)' : 'oklch(0.78 0.02 230)',
+      border: '1px solid ' + (active ? this.CYAN : 'oklch(0.5 0.03 200 / 0.16)'),
+      boxShadow: active ? `0 0 12px oklch(0.84 0.11 205 / 0.5)` : 'none',
+      transition: 'all 0.12s ease',
+    };
+  }
+  _typeChip(active) {
+    return {
+      appearance: 'none', cursor: 'pointer', fontFamily: "'Space Grotesk',sans-serif",
+      fontWeight: 600, fontSize: '13px', padding: '9px 14px', borderRadius: '9px', whiteSpace: 'nowrap',
+      background: active ? 'color-mix(in oklch,' + this.GREEN + ' 16%,transparent)' : 'oklch(0.2 0.018 250)',
+      color: active ? this.GREEN : 'oklch(0.78 0.02 230)',
+      border: '1px solid ' + (active ? this.GREEN : 'oklch(0.5 0.03 160 / 0.16)'),
+      transition: 'all 0.13s ease',
+    };
+  }
+  _selCard(active) {
+    return {
+      appearance: 'none', cursor: 'pointer', textAlign: 'left', width: '100%',
+      display: 'flex', alignItems: 'center', gap: '18px', padding: '20px',
+      borderRadius: '18px', background: active ? 'color-mix(in oklch,' + this.GREEN + ' 11%,oklch(0.19 0.018 250))' : 'oklch(0.19 0.018 250)',
+      border: active ? `1.5px solid ${this.GREEN}` : '1.5px solid oklch(0.5 0.03 160 / 0.16)',
+      boxShadow: active ? `0 0 22px oklch(0.85 0.17 152 / 0.22)` : 'none',
+      transition: 'all 0.16s ease', color: 'oklch(0.93 0.01 220)',
+    };
+  }
+  _radio(active) {
+    return {
+      width: '24px', height: '24px', borderRadius: '999px', flexShrink: 0,
+      border: active ? `6px solid ${this.GREEN}` : '2px solid oklch(0.5 0.03 160 / 0.4)',
+      background: active ? 'oklch(0.16 0.03 150)' : 'transparent',
+      boxShadow: active ? `0 0 12px oklch(0.85 0.17 152 / 0.5)` : 'none',
+      transition: 'all 0.16s ease',
+    };
+  }
+  _seg(active) {
+    return {
+      appearance: 'none', border: 'none', cursor: 'pointer',
+      fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: '13px',
+      padding: '7px 16px', borderRadius: '7px', letterSpacing: '0.01em',
+      background: active ? this.GREEN : 'transparent',
+      color: active ? 'oklch(0.16 0.03 150)' : 'oklch(0.72 0.02 230)',
+      boxShadow: active ? `0 0 12px oklch(0.85 0.17 152 / 0.5)` : 'none',
+      transition: 'all 0.15s ease',
+    };
+  }
+
+  renderVals() {
+    const M = this.state.M;
+    const G = this.GREEN, C = this.CYAN, R = this.RED;
+    const instrument = this.state.instrument;
+    const lefty = this.state.lefty;
+    const strings = instrument === 'bass' ? 4 : 6;
+    const openNotes = M ? M.TUNINGS[instrument].map(t => t.note) : (instrument === 'bass' ? ['E','A','D','G'] : ['E','A','D','G','B','E']);
+
+    // palette legend
+    const chip = (bg, glow) => ({ width: '40px', height: '40px', borderRadius: '10px', background: bg, flexShrink: 0, boxShadow: glow ? `0 0 14px ${bg}` : 'inset 0 0 0 1px oklch(1 0 0 / 0.06)' });
+    const palette = [
+      { name: 'Void', role: 'app background', val: 'oklch(.12 .012 250)', swatch: chip('oklch(0.12 0.012 250)', false) },
+      { name: 'Panel', role: 'surfaces', val: 'oklch(.19 .018 250)', swatch: chip('oklch(0.19 0.018 250)', false) },
+      { name: 'Phosphor', role: 'safe · active · key UI', val: 'oklch(.85 .17 152)', swatch: chip(G, true) },
+      { name: 'Signal Cyan', role: 'root note only', val: 'oklch(.84 .11 205)', swatch: chip(C, true) },
+      { name: 'Warning', role: 'muted / avoid', val: 'oklch(.64 .16 25)', swatch: chip(R, true) },
+      { name: 'Text', role: 'primary copy', val: 'oklch(.93 .01 220)', swatch: chip('oklch(0.93 0.01 220)', false) },
+    ];
+
+    // marker legend
+    const md = (extra, txt) => ({ dot: { width: '30px', height: '30px', borderRadius: '999px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: '12px', fontWeight: 600, flexShrink: 0, ...extra }, glyph: txt });
+    const markerLegend = [
+      { ...md({ background: C, color: 'oklch(0.18 0.03 220)', boxShadow: `0 0 12px ${C}` }, '1'), name: 'Root', use: 'tonic / home' },
+      { ...md({ background: 'color-mix(in oklch,' + G + ' 13%,transparent)', color: G, border: `1.5px solid ${G}`, boxShadow: `0 0 7px oklch(0.85 0.17 152 / 0.35)` }, '5'), name: 'Safe', use: 'in-key tone' },
+      { ...md({ background: G, color: 'oklch(0.16 0.03 150)', boxShadow: `0 0 14px ${G}` }, ''), name: 'Active', use: 'now playing' },
+      { ...md({ background: 'transparent', color: G, border: `1.5px solid ${G}` }, 'E'), name: 'Open', use: 'open string' },
+      { ...md({ background: 'transparent', color: R, fontSize: '16px', fontWeight: 700 }, '\u00d7'), name: 'Muted', use: 'do not play' },
+    ];
+
+    // ── home: 5-stage learning path ──
+    const stageDefs = [
+      { n: '01', title: 'Fretboard Basics', sub: 'String names · fret numbers · note at each position', status: 'done', pct: 100 },
+      { n: '02', title: 'Tabs', sub: 'Read tablature as fretboard positions · short riffs', status: 'active', pct: 45 },
+      { n: '03', title: 'Chords', sub: 'Shapes & diagrams tied back to the notes you know', status: 'locked', pct: 0 },
+      { n: '04', title: 'Scales & Keys', sub: 'Major & pentatonic patterns across the neck', status: 'locked', pct: 0 },
+      { n: '05', title: 'Improvisation', sub: 'Solo over a backing track using only safe notes', status: 'locked', pct: 0 },
+    ];
+    const overallPct = Math.round(stageDefs.reduce((a, s) => a + s.pct, 0) / stageDefs.length);
+    const stages = stageDefs.map((s, idx, arr) => {
+      const notLast = idx < arr.length - 1;
+      const done = s.status === 'done', active = s.status === 'active', locked = s.status === 'locked';
+      const node = {
+        width: '46px', height: '46px', borderRadius: '999px', flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: '15px',
+        background: done ? G : (active ? 'color-mix(in oklch,' + C + ' 16%,oklch(0.16 0.02 250))' : 'oklch(0.18 0.016 250)'),
+        color: done ? 'oklch(0.16 0.03 150)' : (active ? C : 'oklch(0.5 0.02 230)'),
+        border: done ? 'none' : (active ? `1.5px solid ${C}` : '1.5px solid oklch(0.5 0.03 160 / 0.18)'),
+        boxShadow: done ? `0 0 16px oklch(0.85 0.17 152 / 0.45)` : (active ? `0 0 18px oklch(0.84 0.11 205 / 0.4)` : 'none'),
+      };
+      const card = {
+        flex: 1, padding: '15px 17px', borderRadius: '15px',
+        background: active ? 'color-mix(in oklch,' + C + ' 7%,oklch(0.185 0.017 250))' : 'oklch(0.185 0.017 250)',
+        border: active ? `1px solid oklch(0.84 0.11 205 / 0.4)` : '1px solid oklch(0.5 0.03 160 / 0.14)',
+        opacity: locked ? 0.62 : 1,
+      };
+      return {
+        ...s, done, active, locked, node, card, notLast,
+        glyph: done ? '\u2713' : s.n,
+        title: s.title, sub: s.sub,
+        titleColor: locked ? 'oklch(0.62 0.02 230)' : 'oklch(0.94 0.01 220)',
+        statusText: done ? 'Complete' : (active ? 'In progress · ' + s.pct + '%' : 'Locked'),
+        statusColor: done ? G : (active ? C : 'oklch(0.5 0.02 230)'),
+        connector: { width: '2px', flex: 1, background: done ? 'oklch(0.85 0.17 152 / 0.5)' : 'oklch(0.5 0.03 160 / 0.18)', borderRadius: '2px', minHeight: '14px' },
+        titleStyle: { fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: '17px', color: locked ? 'oklch(0.62 0.02 230)' : 'oklch(0.94 0.01 220)' },
+        statusStyle: { fontFamily: "'JetBrains Mono',monospace", fontSize: '10.5px', fontWeight: 600, color: done ? G : (active ? C : 'oklch(0.5 0.02 230)'), whiteSpace: 'nowrap', letterSpacing: '0.04em' },
+        showMeter: done || active,
+        meterFillStyle: { width: s.pct + '%', height: '100%', borderRadius: '999px', background: active ? C : G, boxShadow: active ? `0 0 8px ${C}` : `0 0 8px ${G}` },
+        moduleStatus: done ? 'OK' : (active ? 'RUN' : 'LOCK'),
+      };
+    });
+
+    // ── lesson markers (riff) ──
+    let lessonMarkers = [];
+    if (M) {
+      lessonMarkers = M.RIFF.steps.map((s, i) => ({
+        string: s.string, fret: s.fret,
+        kind: i === this.state.lessonStep ? 'active' : 'safe',
+        label: '',
+      }));
+    }
+    // de-dup positions, prefer active
+    const seen = {};
+    lessonMarkers.forEach(m => { const k = m.string + ':' + m.fret; if (!seen[k] || m.kind === 'active') seen[k] = m; });
+    lessonMarkers = Object.values(seen);
+    const tabRows = [];
+    if (M) {
+      const order = [];
+      for (let s = strings - 1; s >= 0; s--) order.push(s);
+      order.forEach(sIdx => {
+        const cells = M.RIFF.steps.map((st, i) => {
+          const has = st.string === sIdx;
+          const active = has && i === this.state.lessonStep;
+          return {
+            fret: has ? String(st.fret) : '', has, active,
+            numStyle: {
+              fontFamily: "'JetBrains Mono',monospace", fontSize: '13px', fontWeight: 700,
+              minWidth: '22px', textAlign: 'center', padding: '2px 0', borderRadius: '6px',
+              background: active ? G : 'oklch(0.17 0.016 250)',
+              color: active ? 'oklch(0.16 0.03 150)' : 'oklch(0.88 0.02 220)',
+              boxShadow: active ? `0 0 12px ${G}` : 'none', transition: 'all 0.1s ease',
+            },
+          };
+        });
+        tabRows.push({ note: openNotes[sIdx], cells });
+      });
+    }
+
+    // ── chords ──
+    let chord = null, chordMarkers = [], chordNotes = [];
+    if (M) {
+      chord = M.CHORDS.find(c => c.id === this.state.chordId) || M.CHORDS[0];
+      chordMarkers = M.chordMarkers(chord);
+      chordNotes = chordMarkers.filter(m => m.kind !== 'muted').map(m => m.note);
+      chordNotes = [...new Set(chordNotes)];
+    }
+    const chordList = M ? M.CHORDS.map(c => ({
+      id: c.id, name: c.name, family: c.family,
+      onClick: () => this.setState({ chordId: c.id }),
+      style: this._chordChip(c.id === this.state.chordId),
+    })) : [];
+
+    // ── scale explorer ──
+    let scaleMarkers = [], scaleNotes = [];
+    if (M) {
+      scaleMarkers = M.scaleMarkers(instrument, this.state.scaleKey, this.state.scaleType, 12, 0);
+      const map = M.scaleMap(this.state.scaleKey, this.state.scaleType);
+      scaleNotes = Object.keys(map).sort((a, b) => map[a].interval - map[b].interval)
+        .map(n => ({
+          note: n, degree: map[n].degree, root: n === this.state.scaleKey,
+          chipStyle: {
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+            padding: '9px 0', minWidth: '44px', borderRadius: '11px',
+            background: n === this.state.scaleKey ? 'color-mix(in oklch,' + C + ' 16%,transparent)' : 'oklch(0.19 0.018 250)',
+            border: '1px solid ' + (n === this.state.scaleKey ? C : 'oklch(0.5 0.03 160 / 0.16)'),
+          },
+          degStyle: { fontFamily: "'JetBrains Mono',monospace", fontSize: '10px', fontWeight: 600, color: n === this.state.scaleKey ? C : 'oklch(0.6 0.04 160 / 0.9)' },
+          noteStyle: { fontFamily: "'Space Grotesk',sans-serif", fontSize: '16px', fontWeight: 700, color: n === this.state.scaleKey ? C : 'oklch(0.93 0.01 220)' },
+        }));
+    }
+    // diatonic chords related to the key
+    let relatedChords = '';
+    if (M) {
+      const NOTES = M.NOTES;
+      const r = NOTES.indexOf(this.state.scaleKey);
+      const minorKey = /min/i.test(this.state.scaleType);
+      const at = (semi) => NOTES[(r + semi) % 12];
+      relatedChords = minorKey
+        ? `${at(0)}m · ${at(5)}m · ${at(7)}m`
+        : `${at(0)} · ${at(5)} · ${at(7)}`;
+    }
+
+    // ── solo ──
+    let soloMarkers = [], soloProg = [], curChordName = '';
+    if (M) {
+      soloProg = M.backingProgression(this.state.soloKey, this.state.soloScale);
+      const activeRoot = this.state.soloChord >= 0 ? soloProg[this.state.soloChord].root : null;
+      soloMarkers = M.scaleMarkers(instrument, this.state.soloKey, this.state.soloScale, 12, 0).map(m => ({
+        ...m, kind: (activeRoot && m.note === activeRoot) ? 'active' : m.kind,
+      }));
+      if (this.state.soloChord >= 0) {
+        const c = soloProg[this.state.soloChord];
+        curChordName = c.root + (c.minor ? 'm' : '');
+      }
+    }
+    const soloProgView = soloProg.map((c, i) => ({
+      name: c.root + (c.minor ? 'm' : ''),
+      active: i === this.state.soloChord,
+      style: this._progChip(i === this.state.soloChord),
+    }));
+
+    const keyChips = (M ? M.KEYS : []).map(k => ({
+      k,
+      onClickScale: () => this.setState({ scaleKey: k }),
+      onClickSolo: () => { this._stopSolo(); this.setState({ soloKey: k }); },
+      scaleStyle: this._keyChip(k === this.state.scaleKey),
+      soloStyle: this._keyChip(k === this.state.soloKey),
+    }));
+    const scaleTypes = (M ? Object.keys(M.SCALES) : []).map(t => ({
+      t, label: M ? M.SCALES[t].label : '',
+      onClickScale: () => this.setState({ scaleType: t }),
+      onClickSolo: () => { this._stopSolo(); this.setState({ soloScale: t }); },
+      scaleStyle: this._typeChip(t === this.state.scaleType),
+      soloStyle: this._typeChip(t === this.state.soloScale),
+    }));
+
+    const vals = {
+      on: true,
+      // control bar
+      pickGuitar: () => { this._stopAll(); this.setState({ instrument: 'guitar' }); },
+      pickBass: () => { this._stopAll(); this.setState({ instrument: 'bass' }); },
+      pickRight: () => this.setState({ lefty: false }),
+      pickLeft: () => this.setState({ lefty: true }),
+      segInstGuitar: this._seg(instrument === 'guitar'),
+      segInstBass: this._seg(instrument === 'bass'),
+      segHandRight: this._seg(!lefty),
+      segHandLeft: this._seg(lefty),
+      palette, markerLegend,
+      // shared
+      instrument, lefty, strings, openNotes,
+      fbInset: { position: 'absolute', top: '14px', left: '12px', right: '14px', bottom: '12px' },
+      zero: 0, four: 4, five: 5, six: 6, twelve: 12, yes: true,
+      // onboarding
+      cardGuitar: this._selCard(instrument === 'guitar'),
+      cardBass: this._selCard(instrument === 'bass'),
+      cardRight: this._selCard(!lefty),
+      cardLeft: this._selCard(lefty),
+      radioGuitar: this._radio(instrument === 'guitar'),
+      radioBass: this._radio(instrument === 'bass'),
+      radioRight: this._radio(!lefty),
+      radioLeft: this._radio(lefty),
+      // home
+      stageDefs, overallPct, stages,
+      overallBar: { width: overallPct + '%', height: '100%', borderRadius: '999px', background: G, boxShadow: `0 0 8px ${G}` },
+      // lesson
+      lessonMarkers, tabRows, riffName: M ? M.RIFF.name : '',
+      lessonPlaying: this.state.lessonPlaying, lessonStep: this.state.lessonStep,
+      toggleRiff: this.toggleRiff,
+      riffPlayLabel: this.state.lessonPlaying ? '\u25a0  Stop' : '\u25b6  Play riff',
+      riffBtnStyle: {
+        appearance: 'none', cursor: 'pointer', flex: 1, padding: '16px', borderRadius: '14px',
+        fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: '16px', letterSpacing: '0.01em',
+        background: this.state.lessonPlaying ? 'transparent' : G,
+        color: this.state.lessonPlaying ? G : 'oklch(0.16 0.03 150)',
+        border: this.state.lessonPlaying ? `1.5px solid ${G}` : 'none',
+        boxShadow: this.state.lessonPlaying ? 'none' : `0 0 20px oklch(0.85 0.17 152 / 0.4)`,
+        transition: 'all 0.15s ease',
+      },
+      stepReadout: this.state.lessonStep >= 0 ? String(this.state.lessonStep + 1).padStart(2, '0') : '--',
+      // chords
+      chord, chordMarkers, chordNotes, chordList,
+      chordNotesStr: chordNotes.join(' · '),
+      chordName: chord ? chord.name : '', chordQuality: chord ? chord.quality : '',
+      // scale explorer
+      scaleMarkers, scaleNotes, scaleKey: this.state.scaleKey, scaleType: this.state.scaleType,
+      scaleTypeLabel: M ? M.SCALES[this.state.scaleType].label : '',
+      keyChips, scaleTypes,
+      // solo
+      soloMarkers, soloProgView, curChordName,
+      soloKey: this.state.soloKey, soloScale: this.state.soloScale,
+      soloScaleLabel: M ? M.SCALES[this.state.soloScale].label : '',
+      soloPlaying: this.state.soloPlaying, toggleSolo: this.toggleSolo,
+      soloPlayLabel: this.state.soloPlaying ? '\u25a0  Stop' : '\u25b6  Play backing',
+      soloBtnStyle: {
+        appearance: 'none', cursor: 'pointer', flex: 1, padding: '16px', borderRadius: '14px',
+        fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: '16px',
+        background: this.state.soloPlaying ? 'transparent' : G,
+        color: this.state.soloPlaying ? G : 'oklch(0.16 0.03 150)',
+        border: this.state.soloPlaying ? `1.5px solid ${G}` : 'none',
+        boxShadow: this.state.soloPlaying ? 'none' : `0 0 20px oklch(0.85 0.17 152 / 0.4)`,
+        transition: 'all 0.15s ease',
+      },
+      scaleNoteCount: scaleNotes.length,
+      relatedChords,
+      guitarOpen: ['E', 'A', 'D', 'G', 'B', 'E'],
+    };
+    return vals;
+  }
+}
+</script>
+</body>
+</html>
