@@ -13,7 +13,12 @@ struct ScaleExplorerView: View {
                 Text("STAGE 04 · SCALES & KEYS").sectionLabel()
                 Text("Scale Explorer").font(Typography.display(28))
 
-                FretboardPlaceholder()
+                FretboardView(
+                    geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12, isLeftHanded: model.isLeftHanded),
+                    openNotes: model.openNotes,
+                    markers: scaleMarkers(instrument: model.instrument, key: model.scaleKey, scale: model.scaleType, frets: 12)
+                )
+                .frame(height: 200)
 
                 let degrees = scaleMap(key: model.scaleKey, scale: model.scaleType)
                     .sorted { $0.value.interval < $1.value.interval }

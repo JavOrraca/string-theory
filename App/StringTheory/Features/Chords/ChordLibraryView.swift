@@ -14,7 +14,12 @@ struct ChordLibraryView: View {
                 Text("STAGE 03 · CHORDS").sectionLabel()
                 Text("Chord Library").font(Typography.display(28))
 
-                FretboardPlaceholder()
+                FretboardView(
+                    geometry: FretboardGeometry(stringCount: 6, fretCount: 5, isLeftHanded: model.isLeftHanded),
+                    openNotes: Tuning.guitar.strings.map(\.note),
+                    markers: chordMarkers(model.selectedChord)
+                )
+                .frame(height: 190)
 
                 let chord = model.selectedChord
                 let notes = chordMarkers(chord)

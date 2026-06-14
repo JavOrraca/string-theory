@@ -14,7 +14,12 @@ struct SoloPracticeView: View {
                 Text("STAGE 05 · IMPROVISATION").sectionLabel()
                 Text("Solo Practice").font(Typography.display(28))
 
-                FretboardPlaceholder(height: 200)
+                FretboardView(
+                    geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12, isLeftHanded: model.isLeftHanded),
+                    openNotes: model.openNotes,
+                    markers: scaleMarkers(instrument: model.instrument, key: model.soloKey, scale: model.soloScale, frets: 12)
+                )
+                .frame(height: 208)
 
                 Text("BACKING LOOP · \(model.soloKey.name) \(model.soloScale.label)").sectionLabel()
                 HStack(spacing: 8) {
