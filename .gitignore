@@ -22,6 +22,7 @@ Package.resolved
 # ── Generated Xcode project ──
 # project.yml is the source of truth; run `xcodegen generate` to (re)create it.
 *.xcodeproj
+App/StringTheory/Info.plist
 
 # ── Fastlane / tooling output ──
 fastlane/report.xml
