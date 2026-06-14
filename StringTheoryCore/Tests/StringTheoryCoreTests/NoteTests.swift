@@ -29,4 +29,12 @@ struct NoteTests {
         #expect(abs(freqAt(base: 82.41, fret: 12) - 164.82) < 0.001) // E2 -> E3
         #expect(abs(freqAt(base: 110.0, fret: 7) - 164.81) < 0.01)   // A2 + 7 semis ≈ E3
     }
+
+    @Test("frequency(octave:) is MIDI concert pitch with A4 = 440")
+    func concertPitch() {
+        #expect(Note.a.frequency(octave: 4) == 440)
+        #expect(Note.a.frequency(octave: 2) == 110)
+        #expect(abs(Note.e.frequency(octave: 2) - 82.41) < 0.01)   // open low E
+        #expect(abs(Note.c.frequency(octave: 4) - 261.63) < 0.01)  // middle C
+    }
 }

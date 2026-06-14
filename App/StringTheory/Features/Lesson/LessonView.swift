@@ -1,44 +1,47 @@
 import SwiftUI
 import StringTheoryCore
 
-/// Tabs lesson — fretboard locked to a tab staff with a stubbed transport.
-/// Audio and step-sync wire up in Phase 5.
+/// Tabs lesson — the fretboard locked to a tab staff with an audio transport.
+/// As the riff plays, the current note lights up on the neck and the matching
+/// tab column highlights, in time with the synthesized pluck.
 struct LessonView: View {
     @Environment(AppModel.self) private var model
 
-    // TODO: wire AudioEngine + step sync in Phase 5
-    @State private var isPlaying = false
-
     private let riff = Riff.drift
 
-    // Guitar open notes low→high (string 0 = low E, string 5 = high e).
-    private var guitarOpenNotes: [Note] {
-        Tuning.guitar.strings.map(\.note)
-    }
+    private var guitarOpenNotes: [Note] { Tuning.guitar.strings.map(\.note) }
 
-    // Riff markers — all safe (active highlighting deferred to Phase 5).
+    /// Riff markers — the current step is `.active`, the rest `.safe` (de-duped).
     private var lessonMarkers: [Marker] {
-        // De-duplicate positions; in Phase 5 the active step will use .active kind.
+        let activeStep = model.riffStep
         var seen: [String: Marker] = [:]
-        for step in riff.steps {
+        for (i, step) in riff.steps.enumerated() {
             let key = "\(step.string):\(step.fret)"
-            seen[key] = Marker(string: step.string, fret: step.fret, kind: .safe)
+            if i == activeStep {
+                seen[key] = Marker(string: step.string, fret: step.fret, kind: .active)
+            } else if seen[key] == nil {
+                seen[key] = Marker(string: step.string, fret: step.fret, kind: .safe)
+            }
         }
         return Array(seen.values)
     }
 
-    // Tab rows: high string (index 5) down to low string (index 0).
-    // Each row carries 12 cells, one per riff step.
+    /// Tab rows high string (5) → low string (0); each carries one cell per step.
     private var tabRows: [TabRow] {
-        let stringCount = 6
-        return stride(from: stringCount - 1, through: 0, by: -1).map { sIdx in
+        let activeStep = model.riffStep
+        return stride(from: 5, through: 0, by: -1).map { sIdx in
             let note = guitarOpenNotes.indices.contains(sIdx) ? guitarOpenNotes[sIdx].name : ""
-            let cells = riff.steps.map { step -> TabCell in
+            let cells = riff.steps.enumerated().map { i, step -> TabCell in
                 let has = step.string == sIdx
-                return TabCell(fret: has ? step.fret : nil)
+                return TabCell(fret: has ? step.fret : nil, isActive: has && i == activeStep)
             }
             return TabRow(stringIndex: sIdx, noteName: note, cells: cells)
         }
+    }
+
+    private var stepReadout: String {
+        if let step = model.riffStep { return String(format: "%02d", step + 1) }
+        return "--"
     }
 
     var body: some View {
@@ -46,11 +49,8 @@ struct LessonView: View {
             AppBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    // ── Header row ────────────────────────────────────────────
-                    headerRow
-                        .padding(.bottom, 18)
+                    headerRow.padding(.bottom, 18)
 
-                    // ── Title + intro ─────────────────────────────────────────
                     Text("Read the riff")
                         .font(Typography.display(26))
                         .foregroundStyle(Theme.Palette.text)
@@ -62,18 +62,10 @@ struct LessonView: View {
                         .lineSpacing(4)
                         .padding(.bottom, 22)
 
-                    // ── Fretboard ─────────────────────────────────────────────
-                    Text("FRETBOARD")
-                        .sectionLabel()
-                        .padding(.bottom, 8)
+                    Text("FRETBOARD").sectionLabel().padding(.bottom, 8)
 
                     FretboardView(
-                        geometry: FretboardGeometry(
-                            stringCount: 6,
-                            fretCount: 5,
-                            startFret: 0,
-                            isLeftHanded: model.isLeftHanded
-                        ),
+                        geometry: FretboardGeometry(stringCount: 6, fretCount: 5, startFret: 0, isLeftHanded: model.isLeftHanded),
                         openNotes: guitarOpenNotes,
                         markers: lessonMarkers
                     )
@@ -81,31 +73,24 @@ struct LessonView: View {
                     .panel()
                     .padding(.bottom, 22)
 
-                    // ── Tab staff ─────────────────────────────────────────────
-                    tabStaff
-                        .padding(.bottom, 28)
+                    tabStaff.padding(.bottom, 28)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 14)
-                .padding(.bottom, 100) // room for transport bar
+                .padding(.bottom, 100) // room for the transport bar
             }
 
-            // ── Transport bar (floated at bottom) ─────────────────────────
-            VStack {
-                Spacer()
-                transportBar
-            }
+            VStack { Spacer(); transportBar }
         }
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: Header row
+    // MARK: Header
 
     private var headerRow: some View {
         HStack(alignment: .center, spacing: 14) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("STAGE 02 · TABS")
-                    .sectionLabel()
+                Text("STAGE 02 · TABS").sectionLabel()
                 Text("Lesson 2.3")
                     .font(Typography.display(16, weight: .semibold))
                     .foregroundStyle(Theme.Palette.text)
@@ -122,73 +107,55 @@ struct LessonView: View {
 
     private var tabStaff: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Label row
             HStack {
-                Text("TABLATURE · \(riff.name)")
-                    .sectionLabel()
+                Text("TABLATURE · \(riff.name)").sectionLabel()
                 Spacer()
-                Text("♩ = 110")
-                    .font(Typography.mono(10))
-                    .foregroundStyle(Theme.Palette.textDim)
+                Text("♩ = 110").font(Typography.mono(10)).foregroundStyle(Theme.Palette.textDim)
             }
             .padding(.bottom, 8)
 
-            // Staff panel
             VStack(spacing: 0) {
                 ForEach(Array(tabRows.enumerated()), id: \.offset) { _, row in
-                    TabRowView(row: row)
-                        .frame(height: 28)
+                    TabRowView(row: row).frame(height: 28)
                 }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 16)
             .background(Theme.Palette.panel, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .strokeBorder(Theme.Palette.hairline, lineWidth: 1)
-            )
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.Palette.hairline, lineWidth: 1))
         }
     }
 
-    // MARK: Transport bar
+    // MARK: Transport
 
     private var transportBar: some View {
         HStack(spacing: 16) {
-            // Step readout
             VStack(spacing: 2) {
-                Text(isPlaying ? "--" : "--")
+                Text(stepReadout)
                     .font(Typography.mono(22, weight: .bold))
                     .foregroundStyle(Theme.Palette.phosphor)
                     .glow(Theme.Palette.phosphor, radius: 10)
-                    .accessibilityLabel(isPlaying ? "Playing" : "Stopped")
+                    .contentTransition(.numericText())
                 Text("STEP")
-                    .font(Typography.mono(9))
-                    .tracking(1.0)
+                    .font(Typography.mono(9)).tracking(1.0)
                     .foregroundStyle(Theme.Palette.textDim)
             }
             .frame(minWidth: 44)
 
-            // Play / Stop button
             Button {
-                isPlaying.toggle()
-                // TODO: wire AudioEngine + step sync in Phase 5
+                model.toggleRiff()
             } label: {
-                Text(isPlaying ? "■  Stop" : "▶  Play riff")
+                Text(model.isPlayingRiff ? "■  Stop" : "▶  Play riff")
             }
             .buttonStyle(PrimaryButtonStyle())
-            .accessibilityLabel(isPlaying ? "Stop riff" : "Play riff")
+            .accessibilityLabel(model.isPlayingRiff ? "Stop riff" : "Play riff")
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
         .padding(.bottom, 16)
         .background(
             Theme.Palette.panelDeep
-                .overlay(
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundStyle(Theme.Palette.hairline),
-                    alignment: .top
-                )
+                .overlay(Rectangle().frame(height: 1).foregroundStyle(Theme.Palette.hairline), alignment: .top)
         )
     }
 }
@@ -204,45 +171,41 @@ private struct TabRow {
 private struct TabCell {
     /// nil means this step doesn't land on this string.
     let fret: Int?
+    let isActive: Bool
 }
-
-// MARK: - TabRowView
 
 private struct TabRowView: View {
     let row: TabRow
 
     var body: some View {
         HStack(spacing: 10) {
-            // Open-string note name
             Text(row.noteName)
                 .font(Typography.mono(11, weight: .semibold))
                 .foregroundStyle(Color(oklchL: 0.6, c: 0.04, h: 160).opacity(0.8))
                 .frame(width: 14, alignment: .center)
 
-            // Horizontal string line with 12 evenly-spaced columns
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
-                    // The string line
                     Rectangle()
                         .fill(Color(oklchL: 0.5, c: 0.03, h: 160).opacity(0.22))
                         .frame(height: 1)
                         .frame(maxWidth: .infinity)
                         .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
 
-                    // 12 columns, one per riff step
                     HStack(spacing: 0) {
                         ForEach(Array(row.cells.enumerated()), id: \.offset) { _, cell in
                             ZStack {
                                 if let fret = cell.fret {
                                     Text("\(fret)")
                                         .font(Typography.mono(13, weight: .bold))
-                                        .foregroundStyle(Color(oklchL: 0.88, c: 0.02, h: 220))
+                                        .foregroundStyle(cell.isActive ? Color(oklchL: 0.16, c: 0.03, h: 150) : Color(oklchL: 0.88, c: 0.02, h: 220))
                                         .frame(minWidth: 22, alignment: .center)
                                         .padding(.vertical, 2)
                                         .background(
                                             RoundedRectangle(cornerRadius: 6)
-                                                .fill(Color(oklchL: 0.17, c: 0.016, h: 250))
+                                                .fill(cell.isActive ? Theme.Palette.phosphor : Color(oklchL: 0.17, c: 0.016, h: 250))
                                         )
+                                        .glow(cell.isActive ? Theme.Palette.phosphor : .clear, radius: cell.isActive ? 10 : 0)
                                 }
                             }
                             .frame(maxWidth: .infinity)

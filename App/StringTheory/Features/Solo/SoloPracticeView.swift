@@ -1,16 +1,12 @@
 import SwiftUI
 import StringTheoryCore
 
-/// Solo Practice — the payoff screen (Stage 05 · Improvisation).
-///
-/// Phase 4: KEY/SCALE selectors, live fretboard with safe-note highlights,
-/// backing progression chips, and a transport bar with stubbed play/stop.
-/// Audio engine wiring and per-chord root-pulse animation arrive in Phase 5.
+/// Solo Practice — the payoff screen (Stage 05 · Improvisation). KEY/SCALE
+/// selectors, a live neck of safe notes, the backing progression, and an audio
+/// transport. As the backing loop plays, the current chord highlights and its
+/// root pulses bright on the neck.
 struct SoloPracticeView: View {
     @Environment(AppModel.self) private var model
-
-    // TODO: wire AudioEngine backing loop in Phase 5
-    @State private var isPlaying = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -32,8 +28,7 @@ struct SoloPracticeView: View {
                     }
                     .padding(.horizontal, 22)
 
-                    // Bottom padding so content clears the fixed transport bar
-                    Spacer().frame(height: 110)
+                    Spacer().frame(height: 110) // clear the fixed transport bar
                 }
             }
 
@@ -41,12 +36,24 @@ struct SoloPracticeView: View {
         }
     }
 
+    // MARK: - Markers (safe notes; the active chord's root pulses)
+
+    private var soloMarkers: [Marker] {
+        let activeRoot = model.activeBackingRoot
+        return scaleMarkers(instrument: model.instrument, key: model.soloKey, scale: model.soloScale, frets: 12)
+            .map { marker in
+                if let activeRoot, marker.note == activeRoot {
+                    return Marker(string: marker.string, fret: marker.fret, kind: .active, note: marker.note, label: marker.label)
+                }
+                return marker
+            }
+    }
+
     // MARK: - Header
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("STAGE 05 · IMPROVISATION")
-                .sectionLabel()
+            Text("STAGE 05 · IMPROVISATION").sectionLabel()
             Text("Solo Practice")
                 .font(Typography.display(28))
                 .foregroundStyle(Theme.Palette.text)
@@ -67,35 +74,16 @@ struct SoloPracticeView: View {
                     ForEach(Note.allCases, id: \.self) { note in
                         let isSelected = note == model.soloKey
                         Button {
-                            if isPlaying { isPlaying = false }
-                            model.soloKey = note
+                            model.setSoloKey(note)
                         } label: {
                             Text(note.name)
                                 .font(Typography.mono(13, weight: .semibold))
-                                .foregroundStyle(
-                                    isSelected
-                                        ? Color(oklchL: 0.18, c: 0.03, h: 220)
-                                        : Color(oklchL: 0.78, c: 0.02, h: 230)
-                                )
+                                .foregroundStyle(isSelected ? Color(oklchL: 0.18, c: 0.03, h: 220) : Color(oklchL: 0.78, c: 0.02, h: 230))
                                 .frame(minWidth: 38, minHeight: 44)
                                 .padding(.horizontal, 4)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 9)
-                                        .fill(isSelected
-                                              ? Theme.Palette.signalCyan
-                                              : Color(oklchL: 0.2, c: 0.018, h: 250))
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 9)
-                                        .strokeBorder(
-                                            isSelected
-                                                ? Theme.Palette.signalCyan
-                                                : Color(oklchL: 0.5, c: 0.03, h: 200, opacity: 0.16),
-                                            lineWidth: 1
-                                        )
-                                )
-                                .glow(isSelected ? Theme.Palette.signalCyan : .clear,
-                                      radius: isSelected ? 12 : 0)
+                                .background(RoundedRectangle(cornerRadius: 9).fill(isSelected ? Theme.Palette.signalCyan : Color(oklchL: 0.2, c: 0.018, h: 250)))
+                                .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(isSelected ? Theme.Palette.signalCyan : Color(oklchL: 0.5, c: 0.03, h: 200, opacity: 0.16), lineWidth: 1))
+                                .glow(isSelected ? Theme.Palette.signalCyan : .clear, radius: isSelected ? 12 : 0)
                         }
                         .accessibilityLabel("Key \(note.name)")
                         .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -120,37 +108,16 @@ struct SoloPracticeView: View {
                 ForEach(ScaleType.allCases, id: \.self) { scaleType in
                     let isSelected = scaleType == model.soloScale
                     Button {
-                        if isPlaying { isPlaying = false }
-                        model.soloScale = scaleType
+                        model.setSoloScale(scaleType)
                     } label: {
                         Text(scaleType.label)
                             .font(Typography.display(13, weight: .semibold))
-                            .foregroundStyle(
-                                isSelected
-                                    ? Theme.Palette.phosphor
-                                    : Color(oklchL: 0.78, c: 0.02, h: 230)
-                            )
+                            .foregroundStyle(isSelected ? Theme.Palette.phosphor : Color(oklchL: 0.78, c: 0.02, h: 230))
                             .padding(.horizontal, 14)
                             .frame(minHeight: 44)
-                            .background(
-                                RoundedRectangle(cornerRadius: 9)
-                                    .fill(
-                                        isSelected
-                                            ? Theme.Palette.phosphor.opacity(0.16)
-                                            : Color(oklchL: 0.2, c: 0.018, h: 250)
-                                    )
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 9)
-                                    .strokeBorder(
-                                        isSelected
-                                            ? Theme.Palette.phosphor
-                                            : Color(oklchL: 0.5, c: 0.03, h: 160, opacity: 0.16),
-                                        lineWidth: 1
-                                    )
-                            )
-                            .glow(isSelected ? Theme.Palette.phosphor : .clear,
-                                  radius: isSelected ? 10 : 0)
+                            .background(RoundedRectangle(cornerRadius: 9).fill(isSelected ? Theme.Palette.phosphor.opacity(0.16) : Color(oklchL: 0.2, c: 0.018, h: 250)))
+                            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(isSelected ? Theme.Palette.phosphor : Color(oklchL: 0.5, c: 0.03, h: 160, opacity: 0.16), lineWidth: 1))
+                            .glow(isSelected ? Theme.Palette.phosphor : .clear, radius: isSelected ? 10 : 0)
                     }
                     .accessibilityLabel("Scale \(scaleType.label)")
                     .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -164,46 +131,27 @@ struct SoloPracticeView: View {
 
     private var fretboard: some View {
         FretboardView(
-            geometry: FretboardGeometry(
-                stringCount: model.stringCount,
-                fretCount: 12,
-                isLeftHanded: model.isLeftHanded
-            ),
+            geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12, isLeftHanded: model.isLeftHanded),
             openNotes: model.openNotes,
-            markers: scaleMarkers(
-                instrument: model.instrument,
-                key: model.soloKey,
-                scale: model.soloScale,
-                frets: 12
-            )
+            markers: soloMarkers
         )
         .frame(height: 208)
         .padding(1)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(oklchL: 0.17, c: 0.016, h: 250))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(Color(oklchL: 0.5, c: 0.03, h: 160, opacity: 0.16), lineWidth: 1)
-        )
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(oklchL: 0.17, c: 0.016, h: 250)))
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color(oklchL: 0.5, c: 0.03, h: 160, opacity: 0.16), lineWidth: 1))
         .padding(.bottom, 14)
-        .accessibilityLabel(
-            "Fretboard showing \(model.soloKey.name) \(model.soloScale.label) — all safe notes highlighted"
-        )
+        .accessibilityLabel("Fretboard showing \(model.soloKey.name) \(model.soloScale.label) — all safe notes highlighted")
     }
 
     // MARK: - Legend
 
     private var legend: some View {
         HStack(alignment: .center, spacing: 9) {
-            // Small phosphor-outline dot matching the prototype's safe-note marker style
             Circle()
                 .fill(Theme.Palette.phosphor.opacity(0.13))
                 .overlay(Circle().strokeBorder(Theme.Palette.phosphor, lineWidth: 1.5))
                 .frame(width: 14, height: 14)
                 .glow(Theme.Palette.phosphor, radius: 6)
-
             Text("Every glowing note is safe over this backing track.")
                 .font(Typography.body(13))
                 .foregroundStyle(Color(oklchL: 0.68, c: 0.02, h: 230))
@@ -225,19 +173,16 @@ struct SoloPracticeView: View {
                 .foregroundStyle(Color(oklchL: 0.58, c: 0.02, h: 230))
 
             HStack(spacing: 7) {
-                ForEach(Array(chords.enumerated()), id: \.offset) { _, chord in
+                ForEach(Array(chords.enumerated()), id: \.offset) { index, chord in
+                    let isActive = model.backingChordIndex == index
                     Text(chord.name)
                         .font(Typography.display(15, weight: .semibold))
-                        .foregroundStyle(Theme.Palette.text)
+                        .foregroundStyle(isActive ? Color(oklchL: 0.16, c: 0.03, h: 150) : Theme.Palette.text)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(
-                            RoundedRectangle(cornerRadius: 9)
-                                .fill(Color(oklchL: 0.2, c: 0.018, h: 250))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 9)
-                                .strokeBorder(Color(oklchL: 0.5, c: 0.03, h: 160, opacity: 0.16), lineWidth: 1)
-                        )
+                        .background(RoundedRectangle(cornerRadius: 9).fill(isActive ? Theme.Palette.phosphor : Color(oklchL: 0.2, c: 0.018, h: 250)))
+                        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(isActive ? Theme.Palette.phosphor : Color(oklchL: 0.5, c: 0.03, h: 160, opacity: 0.16), lineWidth: 1))
+                        .glow(isActive ? Theme.Palette.phosphor : .clear, radius: isActive ? 12 : 0)
+                        .animation(.easeOut(duration: 0.12), value: isActive)
                         .accessibilityLabel("Chord \(chord.name)")
                 }
             }
@@ -249,11 +194,9 @@ struct SoloPracticeView: View {
 
     private var transportBar: some View {
         VStack(spacing: 0) {
-            Divider()
-                .background(Color(oklchL: 0.5, c: 0.03, h: 160, opacity: 0.16))
+            Divider().background(Color(oklchL: 0.5, c: 0.03, h: 160, opacity: 0.16))
 
             HStack(alignment: .center, spacing: 16) {
-                // Key/scale readout
                 VStack(alignment: .center, spacing: 2) {
                     Text(model.soloKey.name)
                         .font(Typography.display(22, weight: .bold))
@@ -269,16 +212,13 @@ struct SoloPracticeView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Current key: \(model.soloKey.name), scale: \(model.soloScale.label)")
 
-                // Play / Stop button
                 Button {
-                    isPlaying.toggle()
-                    // TODO: wire AudioEngine backing loop in Phase 5
+                    model.toggleBacking()
                 } label: {
-                    Text(isPlaying ? "■  Stop" : "▶  Play backing")
+                    Text(model.isPlayingBacking ? "■  Stop" : "▶  Play backing")
                 }
                 .buttonStyle(PrimaryButtonStyle())
-                .accessibilityLabel(isPlaying ? "Stop backing track" : "Play backing track")
-                .accessibilityHint("Toggles the backing loop playback")
+                .accessibilityLabel(model.isPlayingBacking ? "Stop backing track" : "Play backing track")
             }
             .padding(.horizontal, 22)
             .padding(.top, 14)
@@ -290,14 +230,13 @@ struct SoloPracticeView: View {
 
 // MARK: - FlowLayout
 
-/// Left-aligned wrapping chip layout — mirrors the one in ScaleExplorerView.
+/// Left-aligned wrapping chip layout.
 private struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let maxWidth = proposal.width ?? .infinity
         var currentX: CGFloat = 0
-        var currentY: CGFloat = 0
         var rowHeight: CGFloat = 0
         var totalHeight: CGFloat = 0
 
@@ -306,7 +245,6 @@ private struct FlowLayout: Layout {
             if currentX + size.width > maxWidth && currentX > 0 {
                 totalHeight += rowHeight + spacing
                 currentX = 0
-                currentY += rowHeight + spacing
                 rowHeight = 0
             }
             currentX += size.width + spacing
@@ -317,7 +255,6 @@ private struct FlowLayout: Layout {
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let maxWidth = bounds.width
         var currentX: CGFloat = bounds.minX
         var currentY: CGFloat = bounds.minY
         var rowHeight: CGFloat = 0

@@ -37,3 +37,13 @@ public func noteAt(open: Note, fret: Int) -> Note {
 public func freqAt(base: Double, fret: Int) -> Double {
     base * pow(2.0, Double(fret) / 12.0)
 }
+
+public extension Note {
+    /// Concert-pitch frequency (Hz) of this pitch class at the given octave
+    /// (A4 = 440 Hz, MIDI-based). Port of the prototype's `_noteFreq(name, octave)`,
+    /// used by the synthesized backing voices.
+    func frequency(octave: Int) -> Double {
+        let midi = (octave + 1) * 12 + rawValue
+        return 440 * pow(2.0, Double(midi - 69) / 12.0)
+    }
+}
