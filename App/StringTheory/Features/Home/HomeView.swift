@@ -144,7 +144,7 @@ private struct StageRow: View {
             Group {
                 switch stage.status {
                 case .active:
-                    NavigationLink(destination: LessonView()) {
+                    NavigationLink(destination: LessonView(stageNumber: stage.number, stageTitle: stage.title, stageSubtitle: stage.sub)) {
                         StageCard(stage: stage)
                     }
                     .buttonStyle(.plain)

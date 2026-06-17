@@ -1,10 +1,14 @@
 import SwiftUI
 import StringTheoryCore
 
-/// Tabs lesson — the fretboard locked to a tab staff with an audio transport.
-/// As the riff plays, the current note lights up on the neck and the matching
-/// tab column highlights, in time with the synthesized pluck.
+/// Stage lesson detail. Shows the tapped stage's header plus, for now, one
+/// shared interactive fretboard: as the riff plays, the current note lights up
+/// on the neck and the matching tab column highlights in time with the pluck.
 struct LessonView: View {
+    let stageNumber: String
+    let stageTitle: String
+    let stageSubtitle: String
+
     @Environment(AppModel.self) private var model
 
     private let riff = Riff.drift
@@ -51,13 +55,19 @@ struct LessonView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     headerRow.padding(.bottom, 18)
 
-                    Text("Read the riff")
+                    Text(stageTitle)
                         .font(Typography.display(26))
                         .foregroundStyle(Theme.Palette.text)
                         .padding(.bottom, 8)
 
-                    Text("Each number is a fret on that string. Watch the neck light up as the tab plays — that link is the whole skill.")
+                    Text(stageSubtitle)
                         .font(Typography.body(14))
+                        .foregroundStyle(Theme.Palette.textDim)
+                        .lineSpacing(4)
+                        .padding(.bottom, 6)
+
+                    Text("Full per-stage lessons are on the way. For now, here is an interactive fretboard. Press play to watch the notes light up on the neck and the tab in time.")
+                        .font(Typography.body(13))
                         .foregroundStyle(Theme.Palette.textDim)
                         .lineSpacing(4)
                         .padding(.bottom, 22)
@@ -89,17 +99,8 @@ struct LessonView: View {
 
     private var headerRow: some View {
         HStack(alignment: .center, spacing: 14) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("STAGE 02 · TABS").sectionLabel()
-                Text("Lesson 2.3")
-                    .font(Typography.display(16, weight: .semibold))
-                    .foregroundStyle(Theme.Palette.text)
-            }
+            Text("STAGE \(stageNumber)").sectionLabel()
             Spacer()
-            Text("3 / 6")
-                .font(Typography.mono(11, weight: .semibold))
-                .foregroundStyle(Theme.Palette.phosphor)
-                .accessibilityLabel("Progress: lesson 3 of 6")
         }
     }
 
