@@ -5,7 +5,7 @@ import StringTheoryCore
 /// The single shared state object. Holds instrument, handedness, the current
 /// key/scale/chord, playback state, and the learning-path progress.
 ///
-/// Onboarding, instrument, handedness, and progress are persisted in
+/// Onboarding, instrument, handedness, and completed lessons are persisted in
 /// `UserDefaults`, so the app remembers them across launches. The Scale, Chord,
 /// and Solo selections are session-only, like the prototype.
 @MainActor
@@ -15,7 +15,7 @@ final class AppModel {
     private(set) var hasOnboarded: Bool
     private(set) var instrument: Instrument
     private(set) var isLeftHanded: Bool
-    private(set) var stageCompletion: [Int: Double]   // stage id -> fraction 0...1
+    private(set) var completedLessons: Set<String>   // keys of finished lessons
 
     // Session-only exploration state.
     var scaleKey: Note = .e
@@ -27,8 +27,13 @@ final class AppModel {
     // Playback, driven by the audio engine.
     private(set) var isPlayingRiff = false
     private(set) var riffStep: Int?
+    private(set) var riffRepetitions = 0
     private(set) var isPlayingBacking = false
     private(set) var backingChordIndex: Int?
+
+    /// How many full passes of the riff count as "practiced enough" for a lesson.
+    let riffRepetitionGoal = 2
+    var riffGoalReached: Bool { riffRepetitions >= riffRepetitionGoal }
 
     @ObservationIgnored private let audio: AudioEngine = SynthAudioEngine()
     @ObservationIgnored private let defaults: UserDefaults
@@ -38,9 +43,13 @@ final class AppModel {
         hasOnboarded = defaults.bool(forKey: Keys.hasOnboarded)
         instrument = defaults.string(forKey: Keys.instrument).flatMap(Instrument.init(rawValue:)) ?? .guitar
         isLeftHanded = defaults.bool(forKey: Keys.isLeftHanded)
-        stageCompletion = Self.loadCompletion(from: defaults)
+        completedLessons = Set(defaults.stringArray(forKey: Keys.completedLessons) ?? [])
 
-        audio.onRiffStep = { [weak self] step in self?.riffStep = step }
+        audio.onRiffStep = { [weak self] step in
+            guard let self else { return }
+            if let previous = self.riffStep, step < previous { self.riffRepetitions += 1 }
+            self.riffStep = step
+        }
         audio.onBackingChord = { [weak self] index in self?.backingChordIndex = index }
     }
 
@@ -78,30 +87,35 @@ final class AppModel {
 
     // MARK: Learning path (persisted progress)
 
-    /// Completion fraction (0...1) for a stage. A fresh user is 0 everywhere.
-    func progress(forStage id: Int) -> Double {
-        min(max(stageCompletion[id] ?? 0, 0), 1)
+    func isLessonComplete(stageID: Int, lessonID: Int) -> Bool {
+        completedLessons.contains(Self.lessonKey(stageID, lessonID))
+    }
+
+    func markLessonComplete(stageID: Int, lessonID: Int) {
+        if completedLessons.insert(Self.lessonKey(stageID, lessonID)).inserted {
+            defaults.set(Array(completedLessons), forKey: Keys.completedLessons)
+        }
+    }
+
+    /// Completion fraction (0...1) for a stage: finished lessons over total.
+    func progress(for stage: LearningStage) -> Double {
+        guard !stage.lessons.isEmpty else { return 0 }
+        let done = stage.lessons.reduce(0) { $0 + (isLessonComplete(stageID: stage.id, lessonID: $1.id) ? 1 : 0) }
+        return Double(done) / Double(stage.lessons.count)
     }
 
     /// `done` once a stage is finished, `active` for the first unfinished stage,
     /// `locked` for everything after it.
     func status(for stage: LearningStage) -> StageStatus {
-        if progress(forStage: stage.id) >= 1 { return .done }
-        let current = LearningPath.stages.first { progress(forStage: $0.id) < 1 }
+        if progress(for: stage) >= 1 { return .done }
+        let current = LearningPath.stages.first { progress(for: $0) < 1 }
         return stage.id == current?.id ? .active : .locked
     }
 
     var overallPercent: Int {
         guard !LearningPath.stages.isEmpty else { return 0 }
-        let total = LearningPath.stages.reduce(0.0) { $0 + progress(forStage: $1.id) }
+        let total = LearningPath.stages.reduce(0.0) { $0 + progress(for: $1) }
         return Int((total / Double(LearningPath.stages.count) * 100).rounded())
-    }
-
-    /// Record progress for a stage (0...1). The hook real lessons will call as
-    /// the user completes them.
-    func setStageProgress(_ fraction: Double, forStage id: Int) {
-        stageCompletion[id] = min(max(fraction, 0), 1)
-        persistCompletion()
     }
 
     // MARK: Lesson transport
@@ -111,12 +125,13 @@ final class AppModel {
             stopRiff()
         } else {
             stopBacking()
+            riffRepetitions = 0
             audio.playRiff(.drift, tuning: .guitar)
             isPlayingRiff = true
         }
     }
 
-    private func stopRiff() {
+    func stopRiff() {
         audio.stopRiff()
         isPlayingRiff = false
         riffStep = nil
@@ -157,23 +172,11 @@ final class AppModel {
         static let hasOnboarded = "hasOnboarded"
         static let instrument = "instrument"
         static let isLeftHanded = "isLeftHanded"
-        static let stageCompletion = "stageCompletion"
+        static let completedLessons = "completedLessons"
     }
 
-    private func persistCompletion() {
-        let stored = Dictionary(uniqueKeysWithValues: stageCompletion.map { (String($0.key), $0.value) })
-        defaults.set(stored, forKey: Keys.stageCompletion)
-    }
-
-    private static func loadCompletion(from defaults: UserDefaults) -> [Int: Double] {
-        guard let stored = defaults.dictionary(forKey: Keys.stageCompletion) else { return [:] }
-        var result: [Int: Double] = [:]
-        for (key, value) in stored {
-            if let id = Int(key), let fraction = value as? Double {
-                result[id] = fraction
-            }
-        }
-        return result
+    private static func lessonKey(_ stageID: Int, _ lessonID: Int) -> String {
+        "\(stageID).\(lessonID)"
     }
 }
 
@@ -183,24 +186,52 @@ enum StageStatus {
     case done, active, locked
 }
 
-struct LearningStage: Identifiable, Hashable {
-    let id: Int
-    let number: String      // "01" ... "05"
+/// What a lesson presents. `fretboardRiff` is the interactive fretboard + tab
+/// demo we have today; `reading` is a short text lesson (used as real per-stage
+/// content lands).
+enum LessonKind: Hashable {
+    case fretboardRiff
+    case reading(String)
+}
+
+struct Lesson: Identifiable, Hashable {
+    let id: Int            // unique within its stage
     let title: String
     let subtitle: String
+    let kind: LessonKind
+}
+
+struct LearningStage: Identifiable, Hashable {
+    let id: Int
+    let number: String     // "01" ... "05"
+    let title: String
+    let subtitle: String
+    let lessons: [Lesson]
 }
 
 enum LearningPath {
+    // For now each stage has one interactive lesson. Phase 3 breaks Fretboard
+    // Basics into several, and later stages get their own content.
     static let stages: [LearningStage] = [
         LearningStage(id: 1, number: "01", title: "Fretboard Basics",
-                      subtitle: "String names · fret numbers · note at each position"),
+                      subtitle: "String names · fret numbers · note at each position",
+                      lessons: [Lesson(id: 1, title: "Fretboard Basics",
+                                       subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)]),
         LearningStage(id: 2, number: "02", title: "Tabs",
-                      subtitle: "Read tablature as fretboard positions · short riffs"),
+                      subtitle: "Read tablature as fretboard positions · short riffs",
+                      lessons: [Lesson(id: 1, title: "Read the riff",
+                                       subtitle: "Each number is a fret on that string.", kind: .fretboardRiff)]),
         LearningStage(id: 3, number: "03", title: "Chords",
-                      subtitle: "Shapes & diagrams tied back to the notes you know"),
+                      subtitle: "Shapes & diagrams tied back to the notes you know",
+                      lessons: [Lesson(id: 1, title: "Chords",
+                                       subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)]),
         LearningStage(id: 4, number: "04", title: "Scales & Keys",
-                      subtitle: "Major & pentatonic patterns across the neck"),
+                      subtitle: "Major & pentatonic patterns across the neck",
+                      lessons: [Lesson(id: 1, title: "Scales & Keys",
+                                       subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)]),
         LearningStage(id: 5, number: "05", title: "Improvisation",
-                      subtitle: "Solo over a backing track using only safe notes"),
+                      subtitle: "Solo over a backing track using only safe notes",
+                      lessons: [Lesson(id: 1, title: "Improvisation",
+                                       subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)]),
     ]
 }

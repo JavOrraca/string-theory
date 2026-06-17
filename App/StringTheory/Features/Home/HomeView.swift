@@ -5,6 +5,7 @@ import SwiftUI
 /// One row of the Signal Path, built from `LearningPath` plus the user's
 /// persisted progress in `AppModel`.
 private struct Stage {
+    let id: Int
     let number: String      // "01" ... "05"
     let title: String
     let sub: String
@@ -21,11 +22,12 @@ struct HomeView: View {
     private var rows: [Stage] {
         LearningPath.stages.map { stage in
             Stage(
+                id: stage.id,
                 number: stage.number,
                 title: stage.title,
                 sub: stage.subtitle,
                 status: model.status(for: stage),
-                pct: Int((model.progress(forStage: stage.id) * 100).rounded())
+                pct: Int((model.progress(for: stage) * 100).rounded())
             )
         }
     }
@@ -144,11 +146,13 @@ private struct StageRow: View {
             Group {
                 switch stage.status {
                 case .active:
-                    NavigationLink(destination: LessonView(stageNumber: stage.number, stageTitle: stage.title, stageSubtitle: stage.sub)) {
-                        StageCard(stage: stage)
+                    if let learning = LearningPath.stages.first(where: { $0.id == stage.id }) {
+                        NavigationLink(destination: StageLessonsView(stage: learning)) {
+                            StageCard(stage: stage)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Stage \(stage.number): \(stage.title). \(stage.pct == 0 ? "Ready to start" : "In progress, \(stage.pct) percent complete"). Tap to begin.")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Stage \(stage.number): \(stage.title). \(stage.pct == 0 ? "Ready to start" : "In progress, \(stage.pct) percent complete"). Tap to begin.")
                 case .done:
                     StageCard(stage: stage)
                         .accessibilityLabel("Stage \(stage.number): \(stage.title). Complete.")

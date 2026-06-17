@@ -1,21 +1,194 @@
 import SwiftUI
 import StringTheoryCore
 
-/// Stage lesson detail. Shows the tapped stage's header plus, for now, one
-/// shared interactive fretboard: as the riff plays, the current note lights up
-/// on the neck and the matching tab column highlights in time with the pluck.
-struct LessonView: View {
-    let stageNumber: String
-    let stageTitle: String
-    let stageSubtitle: String
+/// Plays through a stage's lessons one at a time. Each lesson fits the screen
+/// (no scrolling); finishing one shows a Completed state with Next / Back to
+/// Main, and completing a stage's lessons advances the path. A settings gear is
+/// in the top-right so tempo and setup are reachable from inside a lesson.
+struct StageLessonsView: View {
+    let stage: LearningStage
 
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    @State private var index = 0
+    @State private var showSettings = false
+
+    private var lesson: Lesson { stage.lessons[min(index, stage.lessons.count - 1)] }
+    private var isLastLesson: Bool { index >= stage.lessons.count - 1 }
+    private var lessonComplete: Bool { model.isLessonComplete(stageID: stage.id, lessonID: lesson.id) }
+
+    var body: some View {
+        ZStack {
+            AppBackground()
+            VStack(spacing: 0) {
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                footer
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { showSettings = true } label: {
+                    Image(systemName: "slider.horizontal.3")
+                }
+                .tint(Theme.Palette.phosphor)
+                .accessibilityLabel("Setup")
+            }
+        }
+        .sheet(isPresented: $showSettings) { SettingsView() }
+        .onChange(of: lesson.id) { model.stopRiff() }
+        .onChange(of: model.riffGoalReached) { _, reached in
+            if reached, !lessonComplete {
+                model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
+                model.stopRiff()
+            }
+        }
+        .onDisappear { model.stopRiff() }
+    }
+
+    // MARK: Content
+
+    @ViewBuilder private var content: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("STAGE \(stage.number)").sectionLabel()
+                Spacer()
+                if stage.lessons.count > 1 {
+                    Text("LESSON \(index + 1) / \(stage.lessons.count)")
+                        .font(Typography.mono(10, weight: .semibold))
+                        .tracking(1.0)
+                        .foregroundStyle(Theme.Palette.textDim)
+                }
+            }
+
+            Text(lesson.title)
+                .font(Typography.display(24))
+                .foregroundStyle(Theme.Palette.text)
+
+            Text(lesson.subtitle)
+                .font(Typography.body(13))
+                .foregroundStyle(Theme.Palette.textDim)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+
+            switch lesson.kind {
+            case .fretboardRiff:
+                RiffLesson()
+            case .reading(let body):
+                Text(body)
+                    .font(Typography.body(15))
+                    .foregroundStyle(Theme.Palette.text)
+                    .lineSpacing(5)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+    }
+
+    // MARK: Footer
+
+    @ViewBuilder private var footer: some View {
+        if lessonComplete {
+            completedBar
+        } else {
+            switch lesson.kind {
+            case .fretboardRiff: transportBar
+            case .reading:
+                bottomBar {
+                    Button("Continue") {
+                        model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                }
+            }
+        }
+    }
+
+    private var transportBar: some View {
+        bottomBar {
+            HStack(spacing: 16) {
+                VStack(spacing: 2) {
+                    Text(model.riffStep.map { String(format: "%02d", $0 + 1) } ?? "--")
+                        .font(Typography.mono(22, weight: .bold))
+                        .foregroundStyle(Theme.Palette.phosphor)
+                        .glow(Theme.Palette.phosphor, radius: 10)
+                        .contentTransition(.numericText())
+                    Text("STEP")
+                        .font(Typography.mono(9)).tracking(1.0)
+                        .foregroundStyle(Theme.Palette.textDim)
+                }
+                .frame(minWidth: 44)
+
+                Button { model.toggleRiff() } label: {
+                    Text(model.isPlayingRiff ? "■  Stop" : "▶  Play riff")
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .accessibilityLabel(model.isPlayingRiff ? "Stop riff" : "Play riff")
+            }
+        }
+    }
+
+    private var completedBar: some View {
+        bottomBar {
+            VStack(spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Theme.Palette.phosphor)
+                    Text("Lesson complete")
+                        .font(Typography.display(15, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.text)
+                    Spacer()
+                }
+                HStack(spacing: 10) {
+                    if isLastLesson {
+                        Button("Back to Main") { back() }
+                            .buttonStyle(PrimaryButtonStyle())
+                    } else {
+                        Button("Back to Main") { back() }
+                            .buttonStyle(SecondaryButtonStyle())
+                        Button("Next lesson") { goNext() }
+                            .buttonStyle(PrimaryButtonStyle())
+                    }
+                }
+            }
+        }
+    }
+
+    private func bottomBar<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .padding(.horizontal, 20)
+            .padding(.top, 14)
+            .padding(.bottom, 16)
+            .frame(maxWidth: .infinity)
+            .background(
+                Theme.Palette.panelDeep
+                    .overlay(Rectangle().frame(height: 1).foregroundStyle(Theme.Palette.hairline), alignment: .top)
+            )
+    }
+
+    private func goNext() {
+        model.stopRiff()
+        if !isLastLesson { index += 1 }
+    }
+
+    private func back() {
+        model.stopRiff()
+        dismiss()
+    }
+}
+
+// MARK: - Riff lesson content (fretboard + tab)
+
+/// The interactive fretboard locked to a tab staff. As the riff plays, the
+/// current note lights up on the neck and the matching tab column highlights.
+private struct RiffLesson: View {
     @Environment(AppModel.self) private var model
 
     private let riff = Riff.drift
-
     private var guitarOpenNotes: [Note] { Tuning.guitar.strings.map(\.note) }
 
-    /// Riff markers — the current step is `.active`, the rest `.safe` (de-duped).
     private var lessonMarkers: [Marker] {
         let activeStep = model.riffStep
         var seen: [String: Marker] = [:]
@@ -30,7 +203,6 @@ struct LessonView: View {
         return Array(seen.values)
     }
 
-    /// Tab rows high string (5) → low string (0); each carries one cell per step.
     private var tabRows: [TabRow] {
         let activeStep = model.riffStep
         return stride(from: 5, through: 0, by: -1).map { sIdx in
@@ -43,113 +215,33 @@ struct LessonView: View {
         }
     }
 
-    private var stepReadout: String {
-        if let step = model.riffStep { return String(format: "%02d", step + 1) }
-        return "--"
-    }
-
     var body: some View {
-        ZStack {
-            AppBackground()
-            // No ScrollView: the fretboard flexes to fill the space left between
-            // the header and the pinned transport, so the whole lesson fits.
-            VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 10) {
-                    headerRow
+        VStack(alignment: .leading, spacing: 12) {
+            FretboardView(
+                geometry: FretboardGeometry(stringCount: 6, fretCount: 5, startFret: 0, isLeftHanded: model.isLeftHanded),
+                openNotes: guitarOpenNotes,
+                markers: lessonMarkers
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .panel()
 
-                    Text(stageTitle)
-                        .font(Typography.display(24))
-                        .foregroundStyle(Theme.Palette.text)
-
-                    Text(stageSubtitle)
-                        .font(Typography.body(13))
-                        .foregroundStyle(Theme.Palette.textDim)
-                        .lineSpacing(3)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    FretboardView(
-                        geometry: FretboardGeometry(stringCount: 6, fretCount: 5, startFret: 0, isLeftHanded: model.isLeftHanded),
-                        openNotes: guitarOpenNotes,
-                        markers: lessonMarkers
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .panel()
-
-                    tabStaff
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("TABLATURE · \(riff.name)").sectionLabel()
+                    Spacer()
+                    Text("♩ = 110").font(Typography.mono(10)).foregroundStyle(Theme.Palette.textDim)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
-                .frame(maxHeight: .infinity, alignment: .top)
-
-                transportBar
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    // MARK: Header
-
-    private var headerRow: some View {
-        HStack(alignment: .center, spacing: 14) {
-            Text("STAGE \(stageNumber)").sectionLabel()
-            Spacer()
-        }
-    }
-
-    // MARK: Tab staff
-
-    private var tabStaff: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("TABLATURE · \(riff.name)").sectionLabel()
-                Spacer()
-                Text("♩ = 110").font(Typography.mono(10)).foregroundStyle(Theme.Palette.textDim)
-            }
-            .padding(.bottom, 8)
-
-            VStack(spacing: 0) {
-                ForEach(Array(tabRows.enumerated()), id: \.offset) { _, row in
-                    TabRowView(row: row).frame(height: 24)
+                VStack(spacing: 0) {
+                    ForEach(Array(tabRows.enumerated()), id: \.offset) { _, row in
+                        TabRowView(row: row).frame(height: 24)
+                    }
                 }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(Theme.Palette.panel, in: RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.Palette.hairline, lineWidth: 1))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 16)
-            .background(Theme.Palette.panel, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.Palette.hairline, lineWidth: 1))
         }
-    }
-
-    // MARK: Transport
-
-    private var transportBar: some View {
-        HStack(spacing: 16) {
-            VStack(spacing: 2) {
-                Text(stepReadout)
-                    .font(Typography.mono(22, weight: .bold))
-                    .foregroundStyle(Theme.Palette.phosphor)
-                    .glow(Theme.Palette.phosphor, radius: 10)
-                    .contentTransition(.numericText())
-                Text("STEP")
-                    .font(Typography.mono(9)).tracking(1.0)
-                    .foregroundStyle(Theme.Palette.textDim)
-            }
-            .frame(minWidth: 44)
-
-            Button {
-                model.toggleRiff()
-            } label: {
-                Text(model.isPlayingRiff ? "■  Stop" : "▶  Play riff")
-            }
-            .buttonStyle(PrimaryButtonStyle())
-            .accessibilityLabel(model.isPlayingRiff ? "Stop riff" : "Play riff")
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
-        .padding(.bottom, 16)
-        .background(
-            Theme.Palette.panelDeep
-                .overlay(Rectangle().frame(height: 1).foregroundStyle(Theme.Palette.hairline), alignment: .top)
-        )
     }
 }
 
@@ -162,7 +254,6 @@ private struct TabRow {
 }
 
 private struct TabCell {
-    /// nil means this step doesn't land on this string.
     let fret: Int?
     let isActive: Bool
 }
