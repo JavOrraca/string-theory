@@ -25,17 +25,17 @@ struct OnboardingView: View {
             VStack(spacing: 14) {
                 if step == 0 {
                     choiceCard("Guitar", "6 strings · E A D G B E", selected: model.instrument == .guitar) {
-                        model.instrument = .guitar
+                        model.setInstrument(.guitar)
                     }
                     choiceCard("Bass", "4 strings · E A D G", selected: model.instrument == .bass) {
-                        model.instrument = .bass
+                        model.setInstrument(.bass)
                     }
                 } else {
                     choiceCard("Right-handed", "Nut on the left · low string at bottom", selected: !model.isLeftHanded) {
-                        model.isLeftHanded = false
+                        model.setLeftHanded(false)
                     }
                     choiceCard("Left-handed", "Nut on the right · fully mirrored", selected: model.isLeftHanded) {
-                        model.isLeftHanded = true
+                        model.setLeftHanded(true)
                     }
                 }
             }
@@ -44,7 +44,7 @@ struct OnboardingView: View {
             Spacer()
 
             Button(step == 0 ? "Continue" : "Enter the path") {
-                withAnimation { step == 0 ? (step = 1) : (model.hasOnboarded = true) }
+                withAnimation { step == 0 ? (step = 1) : model.completeOnboarding() }
             }
             .buttonStyle(PrimaryButtonStyle())
         }

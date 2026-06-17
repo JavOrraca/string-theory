@@ -14,14 +14,14 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 28) {
                     group("INSTRUMENT") {
                         HStack(spacing: 4) {
-                            seg("Guitar", selected: model.instrument == .guitar) { model.instrument = .guitar }
-                            seg("Bass", selected: model.instrument == .bass) { model.instrument = .bass }
+                            seg("Guitar", selected: model.instrument == .guitar) { model.setInstrument(.guitar) }
+                            seg("Bass", selected: model.instrument == .bass) { model.setInstrument(.bass) }
                         }
                     }
                     group("HANDEDNESS") {
                         HStack(spacing: 4) {
-                            seg("Right", selected: !model.isLeftHanded) { model.isLeftHanded = false }
-                            seg("Left", selected: model.isLeftHanded) { model.isLeftHanded = true }
+                            seg("Right", selected: !model.isLeftHanded) { model.setLeftHanded(false) }
+                            seg("Left", selected: model.isLeftHanded) { model.setLeftHanded(true) }
                         }
                     }
                     Text("Instrument and handedness drive every diagram in the app.")

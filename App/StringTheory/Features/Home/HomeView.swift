@@ -1,47 +1,34 @@
 import SwiftUI
 
-// MARK: - Stage model
+// MARK: - Row view model
 
-private enum StageStatus {
-    case done, active, locked
-}
-
+/// One row of the Signal Path, built from `LearningPath` plus the user's
+/// persisted progress in `AppModel`.
 private struct Stage {
-    let number: String      // "01" … "05"
+    let number: String      // "01" ... "05"
     let title: String
     let sub: String
     let status: StageStatus
-    let pct: Int            // 0–100
+    let pct: Int            // 0...100
 }
-
-private let stages: [Stage] = [
-    Stage(number: "01", title: "Fretboard Basics",
-          sub: "String names · fret numbers · note at each position",
-          status: .done,   pct: 100),
-    Stage(number: "02", title: "Tabs",
-          sub: "Read tablature as fretboard positions · short riffs",
-          status: .active, pct: 45),
-    Stage(number: "03", title: "Chords",
-          sub: "Shapes & diagrams tied back to the notes you know",
-          status: .locked, pct: 0),
-    Stage(number: "04", title: "Scales & Keys",
-          sub: "Major & pentatonic patterns across the neck",
-          status: .locked, pct: 0),
-    Stage(number: "05", title: "Improvisation",
-          sub: "Solo over a backing track using only safe notes",
-          status: .locked, pct: 0),
-]
-
-/// Average of the 5 stage percents, rounded to the nearest integer.
-private let overallPct: Int = {
-    let sum = stages.reduce(0) { $0 + $1.pct }
-    return Int((Double(sum) / Double(stages.count)).rounded())
-}()
 
 // MARK: - HomeView
 
 struct HomeView: View {
+    @Environment(AppModel.self) private var model
     @State private var showSettings = false
+
+    private var rows: [Stage] {
+        LearningPath.stages.map { stage in
+            Stage(
+                number: stage.number,
+                title: stage.title,
+                sub: stage.subtitle,
+                status: model.status(for: stage),
+                pct: Int((model.progress(forStage: stage.id) * 100).rounded())
+            )
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -49,9 +36,9 @@ struct HomeView: View {
                 AppBackground()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        HeaderSection(onSettings: { showSettings = true })
+                        HeaderSection(overallPercent: model.overallPercent, onSettings: { showSettings = true })
                             .padding(.bottom, 8)
-                        StageListSection()
+                        StageListSection(stages: rows)
                     }
                     .padding(.horizontal, 22)
                     .padding(.top, 16)
@@ -67,6 +54,7 @@ struct HomeView: View {
 // MARK: - Header
 
 private struct HeaderSection: View {
+    let overallPercent: Int
     let onSettings: () -> Void
 
     var body: some View {
@@ -92,7 +80,7 @@ private struct HeaderSection: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(overallPct)%")
+                    Text("\(overallPercent)%")
                         .font(Typography.display(26))
                         .foregroundStyle(Theme.Palette.phosphor)
                         .glow(Theme.Palette.phosphor, radius: 8)
@@ -111,7 +99,7 @@ private struct HeaderSection: View {
                         .fill(Color(oklchL: 0.20, c: 0.018, h: 250))
                     RoundedRectangle(cornerRadius: 999)
                         .fill(Theme.Palette.phosphor)
-                        .frame(width: geo.size.width * CGFloat(overallPct) / 100)
+                        .frame(width: geo.size.width * CGFloat(overallPercent) / 100)
                         .glow(Theme.Palette.phosphor, radius: 6)
                 }
             }
@@ -125,6 +113,8 @@ private struct HeaderSection: View {
 // MARK: - Stage list
 
 private struct StageListSection: View {
+    let stages: [Stage]
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(stages.enumerated()), id: \.offset) { idx, stage in
@@ -134,7 +124,7 @@ private struct StageListSection: View {
     }
 }
 
-// MARK: - Individual stage row  (node + connector + card)
+// MARK: - Individual stage row (node + connector + card)
 
 private struct StageRow: View {
     let stage: Stage
@@ -150,7 +140,7 @@ private struct StageRow: View {
                 }
             }
 
-            // Right column: card (with optional NavigationLink for active stage)
+            // Right column: card (the active stage pushes into the lesson)
             Group {
                 switch stage.status {
                 case .active:
@@ -158,7 +148,7 @@ private struct StageRow: View {
                         StageCard(stage: stage)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Stage \(stage.number): \(stage.title). In progress, \(stage.pct) percent complete. Tap to continue.")
+                    .accessibilityLabel("Stage \(stage.number): \(stage.title). \(stage.pct == 0 ? "Ready to start" : "In progress, \(stage.pct) percent complete"). Tap to begin.")
                 case .done:
                     StageCard(stage: stage)
                         .accessibilityLabel("Stage \(stage.number): \(stage.title). Complete.")
@@ -182,7 +172,6 @@ private struct NodeView: View {
         case .done:
             return Theme.Palette.phosphor
         case .active:
-            // color-mix(in oklch, signalCyan 16%, panel-ish)
             return Color(oklchL: 0.185, c: 0.017, h: 250)
                 .mix(with: Theme.Palette.signalCyan, by: 0.16)
         case .locked:
@@ -257,8 +246,6 @@ private struct ConnectorLine: View {
             .frame(width: 2)
             .frame(minHeight: 14)
             .cornerRadius(2)
-            // The connector occupies the full remaining height between nodes.
-            // We don't pin an explicit height so it stretches with the card.
     }
 }
 
@@ -293,7 +280,7 @@ private struct StageCard: View {
     private var statusText: String {
         switch stage.status {
         case .done:   return "Complete"
-        case .active: return "In progress · \(stage.pct)%"
+        case .active: return stage.pct == 0 ? "Start" : "In progress · \(stage.pct)%"
         case .locked: return "Locked"
         }
     }
@@ -324,10 +311,10 @@ private struct StageCard: View {
             Text(stage.sub)
                 .font(Typography.body(13))
                 .foregroundStyle(Color(oklchL: 0.64, c: 0.02, h: 230))
-                .lineSpacing(4) // prototype line-height ~1.4 on 13pt body
+                .lineSpacing(4)
                 .padding(.top, 5)
 
-            if stage.status == .done || stage.status == .active {
+            if stage.status == .done || (stage.status == .active && stage.pct > 0) {
                 ProgressMeterView(pct: stage.pct, status: stage.status)
                     .padding(.top, 11)
             }
@@ -370,31 +357,25 @@ private struct ProgressMeterView: View {
 }
 
 // MARK: - Color.mix helper (iOS 17 compatibility shim)
-// SwiftUI's Color.mix(with:by:) is iOS 18+.  We replicate it via OKLCH arithmetic.
+// SwiftUI's Color.mix(with:by:) is iOS 18+. We replicate it by blending in sRGB,
+// which is indistinguishable from OKLCH at the small fractions used here.
 
 private extension Color {
-    /// Blend `self` with `other` by `fraction` (0 = self, 1 = other) in OKLCH space.
     func mix(with other: Color, by fraction: Double) -> Color {
-        // Resolve both colors to sRGB, then lerp in linear light and re-gamma.
-        // For the small fractions used here (0.07, 0.16) a simple sRGB lerp is
-        // visually indistinguishable and avoids bridging to UIColor.
         let f = max(0, min(1, fraction))
         let inv = 1.0 - f
-        // We store OKLCH params so reconstruct from UIColor via SwiftUI resolve.
-        // Fallback: return self blended toward .clear at the given fraction —
-        // but for actual mixing we do it via the UIColor bridging below.
         return Color(uiColor: {
             let a = UIColor(self)
             let b = UIColor(other)
-            var (r1,g1,b1,a1) = (CGFloat(0),CGFloat(0),CGFloat(0),CGFloat(0))
-            var (r2,g2,b2,a2) = (CGFloat(0),CGFloat(0),CGFloat(0),CGFloat(0))
+            var (r1, g1, b1, a1) = (CGFloat(0), CGFloat(0), CGFloat(0), CGFloat(0))
+            var (r2, g2, b2, a2) = (CGFloat(0), CGFloat(0), CGFloat(0), CGFloat(0))
             a.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
             b.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
             return UIColor(
-                red:   r1*inv + r2*f,
-                green: g1*inv + g2*f,
-                blue:  b1*inv + b2*f,
-                alpha: a1*inv + a2*f
+                red:   r1 * inv + r2 * f,
+                green: g1 * inv + g2 * f,
+                blue:  b1 * inv + b2 * f,
+                alpha: a1 * inv + a2 * f
             )
         }())
     }
