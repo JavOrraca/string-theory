@@ -10,6 +10,8 @@ protocol AudioEngine: AnyObject {
     /// Called as the backing loop plays with the index of the current chord.
     var onBackingChord: (@MainActor (Int) -> Void)? { get set }
 
+    /// Plays a single note once (tap-to-hear).
+    func playNote(frequency: Double)
     func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double)
     func stopRiff()
     func playBacking(key: Note, scale: ScaleType, barDuration: Double)
@@ -22,6 +24,7 @@ protocol AudioEngine: AnyObject {
 final class NoopAudioEngine: AudioEngine {
     var onRiffStep: (@MainActor (Int) -> Void)?
     var onBackingChord: (@MainActor (Int) -> Void)?
+    func playNote(frequency: Double) {}
     func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double) {}
     func stopRiff() {}
     func playBacking(key: Note, scale: ScaleType, barDuration: Double) {}

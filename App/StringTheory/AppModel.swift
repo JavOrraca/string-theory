@@ -104,6 +104,12 @@ final class AppModel {
         return progression[index].root
     }
 
+    /// Plays the note at (string, fret) on the current instrument's tuning (tap-to-hear).
+    func playNote(string: Int, fret: Int) {
+        guard tuning.strings.indices.contains(string) else { return }
+        audio.playNote(frequency: freqAt(base: tuning.strings[string].frequency, fret: fret))
+    }
+
     // MARK: Learning path (persisted progress)
 
     func isLessonComplete(stageID: Int, lessonID: Int) -> Bool {
@@ -212,6 +218,14 @@ enum StageStatus {
 enum LessonKind: Hashable {
     case fretboardRiff
     case reading(String)
+    case explore(ExploreLesson)
+}
+
+/// A guided fretboard exploration used by the Fretboard Basics lessons.
+enum ExploreLesson: Hashable {
+    case openStrings
+    case fretNumbers
+    case findNote(Note)
 }
 
 struct Lesson: Identifiable, Hashable {
@@ -235,8 +249,17 @@ enum LearningPath {
     static let stages: [LearningStage] = [
         LearningStage(id: 1, number: "01", title: "Fretboard Basics",
                       subtitle: "String names · fret numbers · note at each position",
-                      lessons: [Lesson(id: 1, title: "Fretboard Basics",
-                                       subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)]),
+                      lessons: [
+                          Lesson(id: 1, title: "Open strings",
+                                 subtitle: "These are your open strings, low to high. Tap each one to hear it.",
+                                 kind: .explore(.openStrings)),
+                          Lesson(id: 2, title: "Fret numbers",
+                                 subtitle: "Frets count up from the nut, each one a semitone higher. Tap a fret to hear it.",
+                                 kind: .explore(.fretNumbers)),
+                          Lesson(id: 3, title: "Find a note",
+                                 subtitle: "The same note lives in many places. Here is every A in the first few frets. Tap any to hear it.",
+                                 kind: .explore(.findNote(.a))),
+                      ]),
         LearningStage(id: 2, number: "02", title: "Tabs",
                       subtitle: "Read tablature as fretboard positions · short riffs",
                       lessons: [Lesson(id: 1, title: "Read the riff",

@@ -193,6 +193,11 @@ final class SynthAudioEngine: AudioEngine {
         }
     }
 
+    func playNote(frequency: Double) {
+        startIfNeeded()
+        bank.add(.pluck(freq: frequency, dur: 0.9, peak: 0.22))
+    }
+
     // MARK: Riff
 
     func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double) {

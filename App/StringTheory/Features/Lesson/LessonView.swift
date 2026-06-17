@@ -37,6 +37,9 @@ struct StageLessonsView: View {
             }
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
+        .onAppear {
+            index = stage.lessons.firstIndex { !model.isLessonComplete(stageID: stage.id, lessonID: $0.id) } ?? 0
+        }
         .onChange(of: lesson.id) { model.stopRiff() }
         .onChange(of: model.riffGoalReached) { _, reached in
             if reached, !lessonComplete {
@@ -75,6 +78,8 @@ struct StageLessonsView: View {
             switch lesson.kind {
             case .fretboardRiff:
                 RiffLesson()
+            case .explore(let exercise):
+                ExploreLessonView(exercise: exercise)
             case .reading(let body):
                 Text(body)
                     .font(Typography.body(15))
@@ -90,18 +95,13 @@ struct StageLessonsView: View {
     // MARK: Footer
 
     @ViewBuilder private var footer: some View {
-        if lessonComplete {
-            completedBar
-        } else {
-            switch lesson.kind {
-            case .fretboardRiff: transportBar
-            case .reading:
-                bottomBar {
-                    Button("Continue") {
-                        model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
-                    }
+        switch lesson.kind {
+        case .fretboardRiff:
+            if lessonComplete { completedBar } else { transportBar }
+        case .reading, .explore:
+            bottomBar {
+                Button(isLastLesson ? "Finish" : "Next") { advance() }
                     .buttonStyle(PrimaryButtonStyle())
-                }
             }
         }
     }
@@ -148,7 +148,7 @@ struct StageLessonsView: View {
                     } else {
                         Button("Back to Main") { back() }
                             .buttonStyle(SecondaryButtonStyle())
-                        Button("Next lesson") { goNext() }
+                        Button("Next lesson") { advance() }
                             .buttonStyle(PrimaryButtonStyle())
                     }
                 }
@@ -168,9 +168,10 @@ struct StageLessonsView: View {
             )
     }
 
-    private func goNext() {
+    private func advance() {
+        model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
         model.stopRiff()
-        if !isLastLesson { index += 1 }
+        if isLastLesson { dismiss() } else { index += 1 }
     }
 
     private func back() {
@@ -298,5 +299,49 @@ private struct TabRowView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Explore lesson content (guided, tap-to-hear fretboard)
+
+/// A guided fretboard for the Fretboard Basics lessons. Shows a small set of
+/// dots, open strings, a run of fret numbers, or every place one note lives, on
+/// the learner's own instrument, and plays the pitch when a dot is tapped.
+private struct ExploreLessonView: View {
+    let exercise: ExploreLesson
+
+    @Environment(AppModel.self) private var model
+
+    private var markers: [Marker] {
+        switch exercise {
+        case .openStrings:
+            return (0..<model.stringCount).map { s in
+                Marker(string: s, fret: 0, kind: .open, label: model.openNotes[s].name)
+            }
+        case .fretNumbers:
+            return (1...5).map { f in
+                Marker(string: 0, fret: f, kind: .safe, label: "\(f)")
+            }
+        case .findNote(let target):
+            var found: [Marker] = []
+            for s in 0..<model.stringCount {
+                for f in 0...5 where noteAt(open: model.openNotes[s], fret: f) == target {
+                    found.append(Marker(string: s, fret: f, kind: .root, label: target.name))
+                }
+            }
+            return found
+        }
+    }
+
+    var body: some View {
+        FretboardView(
+            geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 5,
+                                        startFret: 0, isLeftHanded: model.isLeftHanded),
+            openNotes: model.openNotes,
+            markers: markers,
+            onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .panel()
     }
 }

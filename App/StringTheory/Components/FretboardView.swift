@@ -14,6 +14,8 @@ struct FretboardView: View {
     var showStringLabels = true
     var showFretNumbers = true
     var showInlays = true
+    /// When set, tapping a marker reports its (string, fret) for tap-to-hear.
+    var onTapPosition: ((Int, Int) -> Void)? = nil
 
     private let labelColumnWidth: CGFloat = 22
 
@@ -42,6 +44,9 @@ struct FretboardView: View {
                 ForEach(Array(markers.enumerated()), id: \.offset) { _, marker in
                     let point = geometry.position(for: marker)
                     MarkerDot(marker: marker, diameter: markerDiameter(size))
+                        .contentShape(Circle())
+                        .onTapGesture { onTapPosition?(marker.string, marker.fret) }
+                        .allowsHitTesting(onTapPosition != nil)
                         .position(x: point.x / 100 * size.width,
                                   y: point.y / 100 * size.height)
                 }
