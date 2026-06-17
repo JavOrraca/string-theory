@@ -69,4 +69,20 @@ final class AppModelTests: XCTestCase {
         XCTAssertTrue(reloaded.hasOnboarded)
         XCTAssertTrue(reloaded.isLessonComplete(stageID: stage.id, lessonID: stage.lessons[0].id))
     }
+
+    func testTempoDefaultsClampsAndPersists() {
+        let suite = "test.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+
+        let model = AppModel(defaults: defaults)
+        XCTAssertEqual(model.tempo, AppModel.defaultTempo)
+        model.setTempo(40)
+        XCTAssertEqual(model.tempo, model.tempoRange.lowerBound)
+        model.setTempo(999)
+        XCTAssertEqual(model.tempo, model.tempoRange.upperBound)
+        model.setTempo(90)
+
+        XCTAssertEqual(AppModel(defaults: defaults).tempo, 90)
+    }
 }

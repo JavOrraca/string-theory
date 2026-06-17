@@ -9,6 +9,7 @@ final class OnboardingUITests: XCTestCase {
     @MainActor
     func testOnboardingRendersAndEntersApp() {
         let app = XCUIApplication()
+        app.launchArguments = ["-uitest-reset"]
         app.launch()
 
         // Step 1 — instrument

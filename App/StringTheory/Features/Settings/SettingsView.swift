@@ -24,7 +24,31 @@ struct SettingsView: View {
                             seg("Left", selected: model.isLeftHanded) { model.setLeftHanded(true) }
                         }
                     }
-                    Text("Instrument and handedness drive every diagram in the app.")
+                    group("TEMPO") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("\(model.tempo) BPM")
+                                    .font(Typography.mono(15, weight: .semibold))
+                                    .foregroundStyle(Theme.Palette.phosphor)
+                                Spacer()
+                                Text("Takes effect on the next play")
+                                    .font(Typography.mono(10))
+                                    .foregroundStyle(Theme.Palette.textDim)
+                            }
+                            Slider(
+                                value: Binding(
+                                    get: { Double(model.tempo) },
+                                    set: { model.setTempo(Int($0.rounded())) }
+                                ),
+                                in: Double(model.tempoRange.lowerBound)...Double(model.tempoRange.upperBound),
+                                step: 1
+                            )
+                            .tint(Theme.Palette.phosphor)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                    }
+                    Text("Instrument and handedness drive every diagram. Tempo sets the riff and backing speed.")
                         .font(Typography.body(13))
                         .foregroundStyle(Theme.Palette.textDim)
                     Spacer()

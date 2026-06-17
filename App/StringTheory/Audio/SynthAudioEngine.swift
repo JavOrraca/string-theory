@@ -195,11 +195,11 @@ final class SynthAudioEngine: AudioEngine {
 
     // MARK: Riff
 
-    func playRiff(_ riff: Riff, tuning: Tuning) {
+    func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double) {
         startIfNeeded()
         stopRiff()
         let steps = riff.steps
-        let stepDur = 0.30
+        let stepDur = stepDuration
         riffTask = Task { @MainActor [weak self] in
             var i = 0
             while !Task.isCancelled {
@@ -221,12 +221,12 @@ final class SynthAudioEngine: AudioEngine {
 
     // MARK: Backing loop
 
-    func playBacking(key: Note, scale: ScaleType) {
+    func playBacking(key: Note, scale: ScaleType, barDuration: Double) {
         startIfNeeded()
         stopBacking()
         let prog = backingProgression(key: key, scale: scale)
         guard !prog.isEmpty else { return }
-        let barDur = 1.7
+        let barDur = barDuration
         backingTask = Task { @MainActor [weak self] in
             var bar = 0
             while !Task.isCancelled {

@@ -10,9 +10,9 @@ protocol AudioEngine: AnyObject {
     /// Called as the backing loop plays with the index of the current chord.
     var onBackingChord: (@MainActor (Int) -> Void)? { get set }
 
-    func playRiff(_ riff: Riff, tuning: Tuning)
+    func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double)
     func stopRiff()
-    func playBacking(key: Note, scale: ScaleType)
+    func playBacking(key: Note, scale: ScaleType, barDuration: Double)
     func stopBacking()
     func stopAll()
 }
@@ -22,9 +22,9 @@ protocol AudioEngine: AnyObject {
 final class NoopAudioEngine: AudioEngine {
     var onRiffStep: (@MainActor (Int) -> Void)?
     var onBackingChord: (@MainActor (Int) -> Void)?
-    func playRiff(_ riff: Riff, tuning: Tuning) {}
+    func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double) {}
     func stopRiff() {}
-    func playBacking(key: Note, scale: ScaleType) {}
+    func playBacking(key: Note, scale: ScaleType, barDuration: Double) {}
     func stopBacking() {}
     func stopAll() {}
 }

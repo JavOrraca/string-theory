@@ -51,3 +51,30 @@ struct AppBackground: View {
         .ignoresSafeArea()
     }
 }
+
+/// A top-trailing settings gear that opens the Settings sheet. For screens that
+/// are not inside a NavigationStack (the Chords / Scales / Solo tabs); Home and
+/// the lesson screen have their own gear.
+private struct SettingsGearModifier: ViewModifier {
+    @State private var show = false
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .topTrailing) {
+                Button { show = true } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Theme.Palette.textDim)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("Setup")
+                .padding(.trailing, 8)
+            }
+            .sheet(isPresented: $show) { SettingsView() }
+    }
+}
+
+extension View {
+    func settingsGear() -> some View { modifier(SettingsGearModifier()) }
+}

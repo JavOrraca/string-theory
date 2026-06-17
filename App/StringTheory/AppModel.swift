@@ -3,11 +3,11 @@ import Observation
 import StringTheoryCore
 
 /// The single shared state object. Holds instrument, handedness, the current
-/// key/scale/chord, playback state, and the learning-path progress.
+/// key/scale/chord, tempo, playback state, and the learning-path progress.
 ///
-/// Onboarding, instrument, handedness, and completed lessons are persisted in
-/// `UserDefaults`, so the app remembers them across launches. The Scale, Chord,
-/// and Solo selections are session-only, like the prototype.
+/// Onboarding, instrument, handedness, tempo, and completed lessons are persisted
+/// in `UserDefaults`, so the app remembers them across launches. The Scale,
+/// Chord, and Solo selections are session-only, like the prototype.
 @MainActor
 @Observable
 final class AppModel {
@@ -15,7 +15,8 @@ final class AppModel {
     private(set) var hasOnboarded: Bool
     private(set) var instrument: Instrument
     private(set) var isLeftHanded: Bool
-    private(set) var completedLessons: Set<String>   // keys of finished lessons
+    private(set) var tempo: Int                       // BPM for the riff and backing loop
+    private(set) var completedLessons: Set<String>    // keys of finished lessons
 
     // Session-only exploration state.
     var scaleKey: Note = .e
@@ -35,6 +36,10 @@ final class AppModel {
     let riffRepetitionGoal = 2
     var riffGoalReached: Bool { riffRepetitions >= riffRepetitionGoal }
 
+    /// Allowed tempo range in BPM. 110 is the prototype's default.
+    let tempoRange = 60...160
+    static let defaultTempo = 110
+
     @ObservationIgnored private let audio: AudioEngine = SynthAudioEngine()
     @ObservationIgnored private let defaults: UserDefaults
 
@@ -43,6 +48,7 @@ final class AppModel {
         hasOnboarded = defaults.bool(forKey: Keys.hasOnboarded)
         instrument = defaults.string(forKey: Keys.instrument).flatMap(Instrument.init(rawValue:)) ?? .guitar
         isLeftHanded = defaults.bool(forKey: Keys.isLeftHanded)
+        tempo = (defaults.object(forKey: Keys.tempo) as? Int) ?? Self.defaultTempo
         completedLessons = Set(defaults.stringArray(forKey: Keys.completedLessons) ?? [])
 
         audio.onRiffStep = { [weak self] step in
@@ -70,12 +76,25 @@ final class AppModel {
         defaults.set(true, forKey: Keys.hasOnboarded)
     }
 
+    /// Sets the tempo (clamped to `tempoRange`). Takes effect the next time the
+    /// riff or backing loop is started.
+    func setTempo(_ bpm: Int) {
+        let clamped = min(max(bpm, tempoRange.lowerBound), tempoRange.upperBound)
+        guard clamped != tempo else { return }
+        tempo = clamped
+        defaults.set(clamped, forKey: Keys.tempo)
+    }
+
     // MARK: Derived state
 
     var tuning: Tuning { .standard(for: instrument) }
     var openNotes: [Note] { tuning.strings.map(\.note) }
     var stringCount: Int { tuning.stringCount }
     var selectedChord: Chord { Chord.named(chordID) ?? Chord.library[0] }
+
+    /// Riff step / backing bar durations, scaled from the default 110 BPM.
+    private var riffStepDuration: Double { 0.30 * Double(Self.defaultTempo) / Double(tempo) }
+    private var backingBarDuration: Double { 1.7 * Double(Self.defaultTempo) / Double(tempo) }
 
     /// Root note of the chord currently sounding in the backing loop, if any.
     var activeBackingRoot: Note? {
@@ -126,7 +145,7 @@ final class AppModel {
         } else {
             stopBacking()
             riffRepetitions = 0
-            audio.playRiff(.drift, tuning: .guitar)
+            audio.playRiff(.drift, tuning: .guitar, stepDuration: riffStepDuration)
             isPlayingRiff = true
         }
     }
@@ -144,7 +163,7 @@ final class AppModel {
             stopBacking()
         } else {
             stopRiff()
-            audio.playBacking(key: soloKey, scale: soloScale)
+            audio.playBacking(key: soloKey, scale: soloScale, barDuration: backingBarDuration)
             isPlayingBacking = true
         }
     }
@@ -172,6 +191,7 @@ final class AppModel {
         static let hasOnboarded = "hasOnboarded"
         static let instrument = "instrument"
         static let isLeftHanded = "isLeftHanded"
+        static let tempo = "tempo"
         static let completedLessons = "completedLessons"
     }
 
