@@ -51,46 +51,38 @@ struct LessonView: View {
     var body: some View {
         ZStack {
             AppBackground()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    headerRow.padding(.bottom, 18)
+            // No ScrollView: the fretboard flexes to fill the space left between
+            // the header and the pinned transport, so the whole lesson fits.
+            VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 10) {
+                    headerRow
 
                     Text(stageTitle)
-                        .font(Typography.display(26))
+                        .font(Typography.display(24))
                         .foregroundStyle(Theme.Palette.text)
-                        .padding(.bottom, 8)
 
                     Text(stageSubtitle)
-                        .font(Typography.body(14))
-                        .foregroundStyle(Theme.Palette.textDim)
-                        .lineSpacing(4)
-                        .padding(.bottom, 6)
-
-                    Text("Full per-stage lessons are on the way. For now, here is an interactive fretboard. Press play to watch the notes light up on the neck and the tab in time.")
                         .font(Typography.body(13))
                         .foregroundStyle(Theme.Palette.textDim)
-                        .lineSpacing(4)
-                        .padding(.bottom, 22)
-
-                    Text("FRETBOARD").sectionLabel().padding(.bottom, 8)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     FretboardView(
                         geometry: FretboardGeometry(stringCount: 6, fretCount: 5, startFret: 0, isLeftHanded: model.isLeftHanded),
                         openNotes: guitarOpenNotes,
                         markers: lessonMarkers
                     )
-                    .frame(height: 180)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .panel()
-                    .padding(.bottom, 22)
 
-                    tabStaff.padding(.bottom, 28)
+                    tabStaff
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 14)
-                .padding(.bottom, 100) // room for the transport bar
-            }
+                .padding(.top, 12)
+                .frame(maxHeight: .infinity, alignment: .top)
 
-            VStack { Spacer(); transportBar }
+                transportBar
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -117,7 +109,7 @@ struct LessonView: View {
 
             VStack(spacing: 0) {
                 ForEach(Array(tabRows.enumerated()), id: \.offset) { _, row in
-                    TabRowView(row: row).frame(height: 28)
+                    TabRowView(row: row).frame(height: 24)
                 }
             }
             .padding(.horizontal, 14)
