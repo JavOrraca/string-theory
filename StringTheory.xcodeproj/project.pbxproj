@@ -60,14 +60,14 @@
 		185AA5E9478C498224BECC4A /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
 		1AAB3237C9AFB66A0056CFD9 /* AppModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelTests.swift; sourceTree = "<group>"; };
 		2CC49A044380FC74B1ED8570 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
-		3816A42CF559445A0F1CEDBC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3816A42CF559445A0F1CEDBC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		38D40C9DD41C13BEC6925084 /* JetBrainsMono-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMono-Variable.ttf"; sourceTree = "<group>"; };
 		4208835A3CAA8F9DB5E630A9 /* StringTheoryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringTheoryApp.swift; sourceTree = "<group>"; };
 		421E855AC76A26993725F268 /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
 		437CB20105E9F3AC15001AF6 /* ScaleExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleExplorerView.swift; sourceTree = "<group>"; };
 		4597E4E65C48751D0594147C /* SynthAudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthAudioEngine.swift; sourceTree = "<group>"; };
-		480E23097F35EEA4E4D8F10E /* StringTheoryUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = StringTheoryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AC07B06D1342BCAE84BC212 /* StringTheoryCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = StringTheoryCore; path = StringTheoryCore; sourceTree = SOURCE_ROOT; };
+		480E23097F35EEA4E4D8F10E /* StringTheoryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StringTheoryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AC07B06D1342BCAE84BC212 /* StringTheoryCore */ = {isa = PBXFileReference; lastKnownFileType = folder; path = StringTheoryCore; sourceTree = SOURCE_ROOT; };
 		5BDD46A9002C19DF60F781D8 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		5D6C2F0F88ECD79A19A61EFC /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		6501B032FC80D1153FFBDD9A /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -84,10 +84,10 @@
 		C1ECC660E187B0A5E74867C6 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		C9505B6F66AF1CD528F4072D /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		E19215E3DD3FEFB952DECEFE /* HankenGrotesk-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HankenGrotesk-Variable.ttf"; sourceTree = "<group>"; };
-		E37CC33ED0C48A1C5FFB8C5A /* StringTheory.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = StringTheory.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E37CC33ED0C48A1C5FFB8C5A /* StringTheory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StringTheory.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1AF6873491F281BFF0BB919 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
 		FB7AC28A7F186974E9EDEA48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		FCA6A8C7569D39930E02B748 /* StringTheoryTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = StringTheoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FCA6A8C7569D39930E02B748 /* StringTheoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StringTheoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -368,10 +368,9 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					2594871277D62D3EF71F6EE0 = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 					9749FCAF1C7E5A081168777B = {
@@ -556,6 +555,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -571,6 +571,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -618,6 +619,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -640,6 +642,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -669,6 +672,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = YNYFAC93MP;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/StringTheory/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -703,6 +707,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = YNYFAC93MP;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/StringTheory/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
