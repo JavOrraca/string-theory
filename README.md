@@ -58,8 +58,6 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 16'
 ```
 
-CI runs both on every pull request. See `.github/workflows/ci.yml`.
-
 ## Architecture
 
 The full version is in `docs/Architecture.md`. The short version: the core package holds everything testable and platform free (notes, tunings, scales, chords, the riff, backing progressions, and the fretboard layout math). The app depends on the core and adds the SwiftUI screens, the shared state model, and an `AVAudioEngine` synth. One fretboard view renders every diagram from the core geometry.
