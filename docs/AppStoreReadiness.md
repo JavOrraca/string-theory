@@ -5,8 +5,8 @@ A checklist for shipping String Theory. Anything that needs your Apple Developer
 ## Identity
 
 - App name: String Theory.
-- Bundle identifier: `com.example.stringtheory` (placeholder). TODO: change it to your reverse-domain id in `project.yml` under the `StringTheory` target, then run `xcodegen generate`.
-- Apple Developer Team ID: TODO. Set `DEVELOPMENT_TEAM` in `project.yml`.
+- Bundle identifier: `com.javierorraca.stringtheory`. Change it in the StringTheory target's build settings if you need a different one.
+- Apple Developer Team: set it in Xcode under the StringTheory target, Signing and Capabilities, with automatic signing.
 - Version `MARKETING_VERSION` is 0.1.0 and build `CURRENT_PROJECT_VERSION` is 1. Both live in `project.yml`.
 
 ## Signing

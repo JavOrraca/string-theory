@@ -29,10 +29,6 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
-      - name: Install XcodeGen
-        run: brew install xcodegen
-      - name: Generate the Xcode project
-        run: xcodegen generate
       - name: Build and test
         # The simulator name must match one the runner has installed.
         # Run `xcrun simctl list devices available` locally or in a debug step

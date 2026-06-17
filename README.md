@@ -16,23 +16,30 @@ This is a native SwiftUI port of an HTML/JS prototype. The prototype still lives
 
 - `StringTheoryCore/` is a Swift package with the music-theory engine and the fretboard geometry. No UIKit or SwiftUI, so it runs under `swift test` on its own.
 - `App/StringTheory/` is the iOS app: SwiftUI views, an `@Observable` state model, the design system, and the audio engine.
-- `project.yml` is the XcodeGen spec. The `.xcodeproj` is generated from it and is not committed.
+- `StringTheory.xcodeproj` is committed and opened directly in Xcode. `project.yml` is kept as a record of the original XcodeGen setup.
 - `prototype/` holds the original HTML/JS files used as the spec.
 - `docs/` has the architecture notes and the App Store checklist.
 
 ## Requirements
 
 - Xcode 26 or newer (Swift 6, iOS 17 deployment target).
-- XcodeGen: `brew install xcodegen`.
 
 ## Run
 
 ```sh
-xcodegen generate
 open StringTheory.xcodeproj
 ```
 
-Pick the StringTheory scheme and an iPhone simulator, then run.
+Pick the StringTheory scheme and an iPhone simulator, then run. To run on a device, see "On your iPhone" below.
+
+## On your iPhone
+
+1. Open `StringTheory.xcodeproj` in Xcode.
+2. Select the StringTheory target, then Signing and Capabilities. Check "Automatically manage signing" and pick your team. A free Apple ID works for development.
+3. Connect your iPhone, trust the Mac if asked, and choose the phone as the run destination.
+4. Run. The first time, approve the developer certificate on the phone under Settings > General > VPN and Device Management.
+
+The bundle id is `com.javierorraca.stringtheory`. Change it in the target's build settings if you need a different one.
 
 ## Test
 
