@@ -19,6 +19,9 @@ final class AppModel {
     private(set) var completedLessons: Set<String>    // keys of finished lessons
 
     // Session-only exploration state.
+    /// Which tab is showing. Session-only. A lesson handoff sets this to send the
+    /// learner into the matching tool tab.
+    var selectedTab: MainTab = .path
     var scaleKey: Note = .e
     var scaleType: ScaleType = .minorPentatonic
     var chordID: String = "C"
@@ -211,6 +214,12 @@ final class AppModel {
 }
 
 // MARK: - Learning path content
+
+/// The four tabs in the main shell. Drives `TabView` selection so a lesson can
+/// hand off to a tool tab.
+enum MainTab: Hashable {
+    case path, chords, scales, solo
+}
 
 enum StageStatus {
     case done, active, locked

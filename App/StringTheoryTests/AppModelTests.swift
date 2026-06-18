@@ -122,4 +122,14 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.status(for: model.stages[1]), .done)
         XCTAssertEqual(model.status(for: model.stages[2]), .active)
     }
+
+    func testSelectedTabDefaultsToPath() {
+        XCTAssertEqual(freshModel().selectedTab, .path)
+    }
+
+    func testSelectedTabIsSettable() {
+        let model = freshModel()
+        model.selectedTab = .scales
+        XCTAssertEqual(model.selectedTab, .scales)
+    }
 }

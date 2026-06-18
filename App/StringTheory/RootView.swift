@@ -19,18 +19,25 @@ struct RootView: View {
 }
 
 struct MainTabView: View {
+    @Environment(AppModel.self) private var model
+
     var body: some View {
-        TabView {
+        @Bindable var model = model
+        TabView(selection: $model.selectedTab) {
             HomeView()
+                .tag(MainTab.path)
                 .tabItem { Label("Path", systemImage: "chart.line.uptrend.xyaxis") }
             ChordLibraryView()
                 .settingsGear()
+                .tag(MainTab.chords)
                 .tabItem { Label("Chords", systemImage: "circle.grid.2x2.fill") }
             ScaleExplorerView()
                 .settingsGear()
+                .tag(MainTab.scales)
                 .tabItem { Label("Scales", systemImage: "chart.bar.fill") }
             SoloPracticeView()
                 .settingsGear()
+                .tag(MainTab.solo)
                 .tabItem { Label("Solo", systemImage: "play.fill") }
         }
         .tint(Theme.Palette.phosphor)
