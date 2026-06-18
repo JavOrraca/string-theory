@@ -181,7 +181,9 @@ final class AppModel {
         }
     }
 
-    private func stopBacking() {
+    /// Stops the backing loop. Public so a `.backing` lesson can stop it when the
+    /// learner advances or leaves the stage, the way `stopRiff` works for tabs.
+    func stopBacking() {
         audio.stopBacking()
         isPlayingBacking = false
         backingChordIndex = nil
@@ -228,12 +230,14 @@ enum StageStatus {
 /// What a lesson presents. `tab` plays any riff on the learner's own tuning;
 /// `reading` is a short text lesson (used as real per-stage content lands);
 /// `scale` shows a scale on the neck, tap-to-hear, with `showDegrees` choosing
-/// whether each tone is labelled with its degree or left as a plain dot.
+/// whether each tone is labelled with its degree or left as a plain dot;
+/// `backing` is the Solo screen's neck driven by the backing loop, tap-to-hear.
 enum LessonKind: Hashable {
     case tab(Riff)
     case reading(String)
     case explore(ExploreLesson)
     case scale(key: Note, type: ScaleType, showDegrees: Bool)
+    case backing(key: Note, type: ScaleType)
 }
 
 /// A guided fretboard exploration used by the Fretboard Basics lessons.

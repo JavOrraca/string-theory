@@ -40,14 +40,20 @@ struct StageLessonsView: View {
         .onAppear {
             index = stage.lessons.firstIndex { !model.isLessonComplete(stageID: stage.id, lessonID: $0.id) } ?? 0
         }
-        .onChange(of: lesson.id) { model.stopRiff() }
+        .onChange(of: lesson.id) {
+            model.stopRiff()
+            model.stopBacking()
+        }
         .onChange(of: model.riffGoalReached) { _, reached in
             if reached, !lessonComplete {
                 model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
                 model.stopRiff()
             }
         }
-        .onDisappear { model.stopRiff() }
+        .onDisappear {
+            model.stopRiff()
+            model.stopBacking()
+        }
     }
 
     // MARK: Content
@@ -82,6 +88,8 @@ struct StageLessonsView: View {
                 ExploreLessonView(exercise: exercise)
             case .scale(let key, let type, let showDegrees):
                 ScaleLessonView(key: key, type: type, showDegrees: showDegrees)
+            case .backing(let key, let type):
+                BackingLessonView(key: key, type: type)
             case .reading(let body):
                 Text(body)
                     .font(Typography.body(15))
@@ -118,6 +126,20 @@ struct StageLessonsView: View {
                     }
                     .buttonStyle(SecondaryButtonStyle())
                     .accessibilityLabel(model.isPlayingRiff ? "Stop riff" : "Play riff")
+
+                    Spacer(minLength: 0)
+
+                    forwardButton
+                }
+            }
+        case .backing:
+            bottomBar {
+                HStack(spacing: 16) {
+                    Button { model.toggleBacking() } label: {
+                        Text(model.isPlayingBacking ? "■  Stop" : "▶  Play backing")
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .accessibilityLabel(model.isPlayingBacking ? "Stop backing track" : "Play backing track")
 
                     Spacer(minLength: 0)
 
@@ -162,6 +184,7 @@ struct StageLessonsView: View {
     private func advance() {
         model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
         model.stopRiff()
+        model.stopBacking()
         if isLastLesson { dismiss() } else { index += 1 }
     }
 
@@ -171,9 +194,14 @@ struct StageLessonsView: View {
     private func handoff(to tab: MainTab) {
         model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
         model.stopRiff()
+        model.stopBacking()
         if case .scale(let key, let type, _) = lesson.kind {
             model.scaleKey = key
             model.scaleType = type
+        }
+        if case .backing(let key, let type) = lesson.kind {
+            model.setSoloKey(key)
+            model.setSoloScale(type)
         }
         dismiss()
         model.selectedTab = tab
@@ -390,5 +418,72 @@ private struct ScaleLessonView: View {
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .panel()
+    }
+}
+
+// MARK: - Backing lesson content (solo over the loop, tap-to-hear)
+
+/// The Solo screen's neck inside a lesson: `scaleMarkers` lights every safe note,
+/// and while the backing loop plays the current chord's root pulses (`.active`).
+/// A compact chord row shows the loop. Tapping a note plays it. Appearing sets the
+/// model's solo key/scale so the shared backing engine drives this lesson's key,
+/// which also means the final Solo Practice handoff opens on the same key.
+private struct BackingLessonView: View {
+    let key: Note
+    let type: ScaleType
+
+    @Environment(AppModel.self) private var model
+
+    /// Safe notes for the key; the active chord's root pulses as the loop plays.
+    private var markers: [Marker] {
+        let activeRoot = model.activeBackingRoot
+        return scaleMarkers(instrument: model.instrument, key: key, scale: type, frets: 12)
+            .map { marker in
+                if let activeRoot, marker.note == activeRoot {
+                    return Marker(string: marker.string, fret: marker.fret, kind: .active, note: marker.note, label: marker.label)
+                }
+                return marker
+            }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            FretboardView(
+                geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12,
+                                            startFret: 0, isLeftHanded: model.isLeftHanded),
+                openNotes: model.openNotes,
+                markers: markers,
+                onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .panel()
+
+            backingLoop
+        }
+        .onAppear {
+            model.setSoloKey(key)
+            model.setSoloScale(type)
+        }
+    }
+
+    private var backingLoop: some View {
+        let chords = backingProgression(key: key, scale: type)
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("BACKING LOOP").sectionLabel()
+            HStack(spacing: 7) {
+                ForEach(Array(chords.enumerated()), id: \.offset) { index, chord in
+                    let isActive = model.backingChordIndex == index
+                    Text(chord.name)
+                        .font(Typography.display(15, weight: .semibold))
+                        .foregroundStyle(isActive ? Color(oklchL: 0.16, c: 0.03, h: 150) : Theme.Palette.text)
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .background(RoundedRectangle(cornerRadius: 9).fill(isActive ? Theme.Palette.phosphor : Color(oklchL: 0.2, c: 0.018, h: 250)))
+                        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(isActive ? Theme.Palette.phosphor : Theme.Palette.hairline, lineWidth: 1))
+                        .glow(isActive ? Theme.Palette.phosphor : .clear, radius: isActive ? 12 : 0)
+                        .animation(.easeOut(duration: 0.12), value: isActive)
+                        .accessibilityLabel("Chord \(chord.name)")
+                }
+            }
+        }
     }
 }
