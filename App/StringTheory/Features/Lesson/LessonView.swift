@@ -80,8 +80,8 @@ struct StageLessonsView: View {
                 TabLessonView(riff: riff)
             case .explore(let exercise):
                 ExploreLessonView(exercise: exercise)
-            case .scale(let key, let type):
-                ScaleLessonView(key: key, type: type)
+            case .scale(let key, let type, let showDegrees):
+                ScaleLessonView(key: key, type: type, showDegrees: showDegrees)
             case .reading(let body):
                 Text(body)
                     .font(Typography.body(15))
@@ -171,7 +171,7 @@ struct StageLessonsView: View {
     private func handoff(to tab: MainTab) {
         model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
         model.stopRiff()
-        if case .scale(let key, let type) = lesson.kind {
+        if case .scale(let key, let type, _) = lesson.kind {
             model.scaleKey = key
             model.scaleType = type
         }
@@ -362,19 +362,30 @@ private struct ExploreLessonView: View {
 // MARK: - Scale lesson content (degrees on the neck, tap-to-hear)
 
 /// A scale on the learner's own neck: the core's `scaleMarkers` light the root
-/// in cyan and label every tone with its degree. Tapping a note plays it.
+/// in cyan and label every tone with its degree. `showDegrees` keeps or strips
+/// those labels, so an intro lesson can show the bare shape (root color only)
+/// before a later lesson names the degrees. Tapping a note plays it.
 private struct ScaleLessonView: View {
     let key: Note
     let type: ScaleType
+    let showDegrees: Bool
 
     @Environment(AppModel.self) private var model
+
+    /// The scale tones. `scaleMarkers` always labels each with its degree; with
+    /// `showDegrees` off we drop the labels so only the cyan root stands out.
+    private var markers: [Marker] {
+        let base = scaleMarkers(instrument: model.instrument, key: key, scale: type, frets: 12)
+        guard !showDegrees else { return base }
+        return base.map { var marker = $0; marker.label = nil; return marker }
+    }
 
     var body: some View {
         FretboardView(
             geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12,
                                         startFret: 0, isLeftHanded: model.isLeftHanded),
             openNotes: model.openNotes,
-            markers: scaleMarkers(instrument: model.instrument, key: key, scale: type, frets: 12),
+            markers: markers,
             onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)

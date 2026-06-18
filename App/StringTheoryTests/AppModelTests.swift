@@ -144,6 +144,17 @@ final class AppModelTests: XCTestCase {
         }
     }
 
+    func testStageFourIntroHidesDegreesThenRevealsThem() {
+        let lessons = LearningPath.stages(for: .guitar)[3].lessons
+        func showsDegrees(_ lesson: Lesson) -> Bool {
+            if case .scale(_, _, let show) = lesson.kind { return show }
+            return false
+        }
+        // Lesson 1 introduces the shape as plain dots; the rest name the degrees.
+        XCTAssertFalse(showsDegrees(lessons[0]), "lesson 1 should hide degree labels")
+        XCTAssertTrue(lessons.dropFirst().allSatisfy(showsDegrees), "lessons 2-5 should show degrees")
+    }
+
     func testStageFourLastLessonHandsOffToScales() {
         let last = LearningPath.stages(for: .guitar)[3].lessons[4]
         XCTAssertEqual(last.handoff, .scales)

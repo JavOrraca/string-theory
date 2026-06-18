@@ -227,12 +227,13 @@ enum StageStatus {
 
 /// What a lesson presents. `tab` plays any riff on the learner's own tuning;
 /// `reading` is a short text lesson (used as real per-stage content lands);
-/// `scale` shows scale degrees on the neck, tap-to-hear.
+/// `scale` shows a scale on the neck, tap-to-hear, with `showDegrees` choosing
+/// whether each tone is labelled with its degree or left as a plain dot.
 enum LessonKind: Hashable {
     case tab(Riff)
     case reading(String)
     case explore(ExploreLesson)
-    case scale(key: Note, type: ScaleType)
+    case scale(key: Note, type: ScaleType, showDegrees: Bool)
 }
 
 /// A guided fretboard exploration used by the Fretboard Basics lessons.
@@ -341,19 +342,19 @@ enum LearningPath {
         lessons: [
             Lesson(id: 1, title: "What a scale is",
                    subtitle: "A scale is the set of notes that fit a key. This is E minor pentatonic. The cyan note is the root. Tap any note to hear it.",
-                   kind: .scale(key: .e, type: .minorPentatonic)),
+                   kind: .scale(key: .e, type: .minorPentatonic, showDegrees: false)),
             Lesson(id: 2, title: "The root and the degrees",
                    subtitle: "Every note shows its scale degree, and the root is 1. Tap up from the root to hear the degrees climb.",
-                   kind: .scale(key: .e, type: .minorPentatonic)),
+                   kind: .scale(key: .e, type: .minorPentatonic, showDegrees: true)),
             Lesson(id: 3, title: "Minor vs major pentatonic",
                    subtitle: "Same key, brighter sound. This is E major pentatonic. Compare it to the minor shape you just saw.",
-                   kind: .scale(key: .e, type: .majorPentatonic)),
+                   kind: .scale(key: .e, type: .majorPentatonic, showDegrees: true)),
             Lesson(id: 4, title: "Same shape, new key",
                    subtitle: "Move the whole pattern up and the key changes with it. This is A minor pentatonic: same shape, new root.",
-                   kind: .scale(key: .a, type: .minorPentatonic)),
+                   kind: .scale(key: .a, type: .minorPentatonic, showDegrees: true)),
             Lesson(id: 5, title: "Explore on your own",
                    subtitle: "Now pick any key and scale yourself and watch the whole neck redraw.",
-                   kind: .scale(key: .a, type: .minorPentatonic),
+                   kind: .scale(key: .a, type: .minorPentatonic, showDegrees: true),
                    handoff: .scales),
         ])
 
