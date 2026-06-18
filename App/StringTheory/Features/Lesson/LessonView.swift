@@ -92,6 +92,7 @@ struct StageLessonsView: View {
                 BackingLessonView(key: key, type: type)
             case .chords(let ids):
                 ChordsLessonView(chordIDs: ids)
+                    .id(lesson.id)
             case .arpeggio(let root, let isMinor):
                 ArpeggioLessonView(root: root, isMinor: isMinor)
             case .reading(let body):
@@ -524,18 +525,21 @@ private struct ChordsLessonView: View {
                 HStack(spacing: 8) {
                     ForEach(Array(chordIDs.enumerated()), id: \.offset) { i, id in
                         let isActive = i == index
+                        let name = Chord.named(id)?.name ?? id
                         Button {
                             index = i
                             model.chordID = id
                         } label: {
-                            Text(Chord.named(id)?.name ?? id)
+                            Text(name)
                                 .font(Typography.display(15, weight: .semibold))
                                 .foregroundStyle(isActive ? Theme.Palette.phosphor : Theme.Palette.textDim)
                                 .frame(maxWidth: .infinity, minHeight: 40)
                                 .background(RoundedRectangle(cornerRadius: 9).fill(isActive ? Theme.Palette.phosphor.opacity(0.16) : Color(oklchL: 0.2, c: 0.018, h: 250)))
                                 .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(isActive ? Theme.Palette.phosphor : Theme.Palette.hairline, lineWidth: 1))
+                                .glow(isActive ? Theme.Palette.phosphor.opacity(0.5) : .clear, radius: isActive ? 8 : 0)
                         }
-                        .accessibilityLabel("Show \(Chord.named(id)?.name ?? id)")
+                        .animation(.easeInOut(duration: 0.14), value: isActive)
+                        .accessibilityLabel("Show \(name)")
                         .accessibilityAddTraits(isActive ? [.isSelected] : [])
                     }
                 }
@@ -557,7 +561,10 @@ private struct ChordsLessonView: View {
                     .foregroundStyle(Theme.Palette.signalCyan)
             }
         }
-        .onAppear { model.chordID = chordIDs[0] }
+        .onAppear {
+            assert(model.instrument == .guitar, ".chords lessons are guitar only")
+            model.chordID = chordIDs.first ?? "C"
+        }
     }
 }
 
