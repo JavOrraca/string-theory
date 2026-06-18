@@ -58,4 +58,49 @@ final class OnboardingUITests: XCTestCase {
         // Back on the path.
         XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
     }
+
+    /// Completes Fretboard Basics, then walks the Tabs stage: lesson 1 renders,
+    /// Play/Stop works, and stepping to the end finishes back on the path.
+    @MainActor
+    func testTabsStageFlow() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uitest-reset"]
+        app.launch()
+
+        // Onboarding.
+        XCTAssertTrue(app.staticTexts["Pick your instrument"].waitForExistence(timeout: 5))
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.staticTexts["Which hand frets?"].waitForExistence(timeout: 3))
+        app.buttons["Enter the path"].tap()
+
+        // Complete Fretboard Basics (three lessons).
+        XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
+        app.staticTexts["Fretboard Basics"].tap()
+        XCTAssertTrue(app.staticTexts["Open strings"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Fret numbers"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Find a note"].waitForExistence(timeout: 3))
+        app.buttons["Finish"].tap()
+
+        // Tabs is now active.
+        XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
+        app.staticTexts["Tabs"].tap()
+
+        // Lesson 1 renders, and Play toggles to Stop and back.
+        XCTAssertTrue(app.staticTexts["Reading a tab number"].waitForExistence(timeout: 3))
+        app.buttons["Play riff"].tap()
+        XCTAssertTrue(app.buttons["Stop riff"].waitForExistence(timeout: 3))
+        app.buttons["Stop riff"].tap()
+        XCTAssertTrue(app.buttons["Play riff"].waitForExistence(timeout: 3))
+
+        // Step to the last lesson and finish.
+        app.buttons["Next"].tap()   // 2
+        app.buttons["Next"].tap()   // 3
+        app.buttons["Next"].tap()   // 4
+        app.buttons["Next"].tap()   // 5
+        XCTAssertTrue(app.buttons["Finish"].waitForExistence(timeout: 3))
+        app.buttons["Finish"].tap()
+        XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
+    }
 }
