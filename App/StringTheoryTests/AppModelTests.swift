@@ -175,8 +175,11 @@ final class AppModelTests: XCTestCase {
         let stage = LearningPath.stages(for: .guitar)[4]
         XCTAssertEqual(stage.id, 5)
         XCTAssertEqual(stage.lessons.count, 5)
-        // Lesson 1 reuses the static scale neck (safe notes); 2-5 drive the loop.
-        if case .scale = stage.lessons[0].kind { } else {
+        // Lesson 1 reuses the static scale neck with degrees shown (the safe
+        // notes, labelled like the Solo screen); 2-5 drive the loop.
+        if case .scale(_, _, let showDegrees) = stage.lessons[0].kind {
+            XCTAssertTrue(showDegrees, "stage 5 lesson 1 should show degree labels")
+        } else {
             XCTFail("stage 5 lesson 1 should be a .scale lesson")
         }
         for lesson in stage.lessons.dropFirst() {
@@ -192,13 +195,17 @@ final class AppModelTests: XCTestCase {
     }
 
     func testCompletingEveryStageReachesFullProgress() {
-        let model = freshModel()
-        for stage in model.stages {
-            for lesson in stage.lessons {
-                model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
+        // Stage 2 differs by instrument, so check the whole path on both.
+        for instrument in [Instrument.guitar, .bass] {
+            let model = freshModel()
+            model.setInstrument(instrument)
+            for stage in model.stages {
+                for lesson in stage.lessons {
+                    model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
+                }
             }
+            XCTAssertEqual(model.overallPercent, 100, "\(instrument) should reach 100%")
+            XCTAssertEqual(model.status(for: model.stages[4]), .done)
         }
-        XCTAssertEqual(model.overallPercent, 100)
-        XCTAssertEqual(model.status(for: model.stages[4]), .done)
     }
 }
