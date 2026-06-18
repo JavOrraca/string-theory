@@ -77,3 +77,43 @@ public func chordSpan(_ chord: Chord) -> FretSpan {
     }
     return FretSpan(min: low, max: high)
 }
+
+// MARK: - Chord tones and arpeggio markers
+
+/// The root, third, and fifth of a triad. The third is minor (3 semitones above
+/// the root) or major (4); the fifth is perfect (7). This is the chord-tone math
+/// the backing voices and the bass arpeggio lessons share.
+public func chordTones(root: Note, isMinor: Bool) -> [Note] {
+    [root, noteAt(open: root, fret: isMinor ? 3 : 4), noteAt(open: root, fret: 7)]
+}
+
+/// Markers for the root, third, and fifth of a triad across
+/// `startFret ... startFret + frets` on `instrument`. The root is `.root` and
+/// labelled "R"; the third and fifth are `.safe`, labelled "3" and "5". Mirrors
+/// the shape of `scaleMarkers`.
+public func arpeggioMarkers(
+    instrument: Instrument,
+    root: Note,
+    isMinor: Bool,
+    frets: Int = 12,
+    startFret: Int = 0
+) -> [Marker] {
+    let tuning = Tuning.standard(for: instrument)
+    let tones = chordTones(root: root, isMinor: isMinor)   // [root, third, fifth]
+    let labels = ["R", "3", "5"]
+    var out: [Marker] = []
+    for (stringIndex, openString) in tuning.strings.enumerated() {
+        for fret in startFret...(startFret + frets) {
+            let note = noteAt(open: openString.note, fret: fret)
+            guard let toneIndex = tones.firstIndex(of: note) else { continue }
+            out.append(Marker(
+                string: stringIndex,
+                fret: fret,
+                kind: toneIndex == 0 ? .root : .safe,
+                note: note,
+                label: labels[toneIndex]
+            ))
+        }
+    }
+    return out
+}

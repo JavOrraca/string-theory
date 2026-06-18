@@ -237,10 +237,10 @@ final class SynthAudioEngine: AudioEngine {
             while !Task.isCancelled {
                 guard let self else { break }
                 let chord = prog[bar % prog.count]
-                let thirdSemis = chord.isMinor ? 3 : 4
-                let root = chord.root.frequency(octave: 3)
-                let third = noteAt(open: chord.root, fret: thirdSemis).frequency(octave: 3)
-                let fifth = noteAt(open: chord.root, fret: 7).frequency(octave: 3)
+                let tones = chordTones(root: chord.root, isMinor: chord.isMinor)
+                let root = tones[0].frequency(octave: 3)
+                let third = tones[1].frequency(octave: 3)
+                let fifth = tones[2].frequency(octave: 3)
                 self.bank.add(.pad(freq: root, dur: barDur * 0.96, peak: 0.045))
                 self.bank.add(.pad(freq: third, dur: barDur * 0.96, peak: 0.038))
                 self.bank.add(.pad(freq: fifth, dur: barDur * 0.96, peak: 0.038))
