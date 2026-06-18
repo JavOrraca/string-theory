@@ -49,13 +49,15 @@ struct ChordTests {
         #expect(chordSpan(f) == FretSpan(min: 1, max: 3))
     }
 
-    @Test func chordTonesMajorAndMinor() {
+    @Test("Chord tones are root, major or minor third, and perfect fifth")
+    func chordTonesMajorAndMinor() {
         #expect(chordTones(root: .c, isMinor: false) == [.c, .e, .g])
         #expect(chordTones(root: .a, isMinor: true) == [.a, .c, .e])
         #expect(chordTones(root: .g, isMinor: false) == [.g, .b, .d])
     }
 
-    @Test func arpeggioMarkersLabelRootThirdFifth() {
+    @Test("Arpeggio markers label root, third, and fifth across the bass neck")
+    func arpeggioMarkersLabelRootThirdFifth() {
         let markers = arpeggioMarkers(instrument: .bass, root: .c, isMinor: false, frets: 12)
         #expect(!markers.isEmpty)
         // Every marker sounds one of the three chord tones.
@@ -70,5 +72,15 @@ struct ChordTests {
         // Third and fifth are present and labelled.
         #expect(markers.contains { $0.note == .e && $0.kind == .safe && $0.label == "3" })
         #expect(markers.contains { $0.note == .g && $0.kind == .safe && $0.label == "5" })
+    }
+
+    @Test("Arpeggio markers place tones on a guitar neck too")
+    func arpeggioMarkersOnGuitar() {
+        let markers = arpeggioMarkers(instrument: .guitar, root: .c, isMinor: false, frets: 12)
+        #expect(!markers.isEmpty)
+        // C on the guitar A string (index 1, fret 3) is a labelled root.
+        #expect(markers.contains { $0.string == 1 && $0.fret == 3 && $0.kind == .root && $0.label == "R" })
+        // G, the fifth, on the D string (index 2, fret 5).
+        #expect(markers.contains { $0.string == 2 && $0.fret == 5 && $0.note == .g && $0.label == "5" })
     }
 }
