@@ -274,7 +274,7 @@ enum LearningPath {
     /// in a later increment, stage 3 (Chords) differ by instrument; the rest are
     /// the same and adapt through the shared fretboard geometry.
     static func stages(for instrument: Instrument) -> [LearningStage] {
-        [fretboardBasics, tabs(for: instrument), chords, scalesAndKeys, improvisation]
+        [fretboardBasics, tabs(for: instrument), chords(for: instrument), scalesAndKeys, improvisation]
     }
 
     private static let fretboardBasics = LearningStage(
@@ -338,11 +338,52 @@ enum LearningPath {
             lessons: lessons)
     }
 
-    private static let chords = LearningStage(
-        id: 3, number: "03", title: "Chords",
-        subtitle: "Shapes & diagrams tied back to the notes you know",
-        lessons: [Lesson(id: 1, title: "Chords",
-                         subtitle: "Watch the neck as the riff plays.", kind: .tab(.drift))])
+    private static func chords(for instrument: Instrument) -> LearningStage {
+        let lessons: [Lesson]
+        switch instrument {
+        case .guitar:
+            lessons = [
+                Lesson(id: 1, title: "Reading a chord diagram",
+                       subtitle: "A chord diagram is the neck seen head on. A ring is an open string, an x is a string you do not play, and a dot is a finger. This is E major. Tap a dot to hear its note.",
+                       kind: .chords(["E"])),
+                Lesson(id: 2, title: "E and Em",
+                       subtitle: "Lift one finger off E and it becomes E minor. Step between them and listen to the third drop.",
+                       kind: .chords(["E", "Em"])),
+                Lesson(id: 3, title: "A and Am",
+                       subtitle: "The A shape, major and minor. The lowered third is again what turns major into minor.",
+                       kind: .chords(["A", "Am"])),
+                Lesson(id: 4, title: "D and Dm",
+                       subtitle: "The D shape. Three strings carry the chord and the low two stay muted.",
+                       kind: .chords(["D", "Dm"])),
+                Lesson(id: 5, title: "G and C",
+                       subtitle: "Two open staples. When you are ready, open the Chord Library to explore every shape, including F and Bm.",
+                       kind: .chords(["G", "C"]),
+                       handoff: .chords),
+            ]
+        case .bass:
+            lessons = [
+                Lesson(id: 1, title: "Play the root",
+                       subtitle: "On bass you anchor a chord by playing its root. This is C, lit cyan everywhere it sits on the neck. Tap a cyan note to hear the root.",
+                       kind: .arpeggio(root: .c, isMinor: false)),
+                Lesson(id: 2, title: "Find every root",
+                       subtitle: "Move to G. The same root repeats up the neck and across strings. Find each cyan G and tap it.",
+                       kind: .arpeggio(root: .g, isMinor: false)),
+                Lesson(id: 3, title: "Root and fifth",
+                       subtitle: "Root to fifth is the classic bass move. Play the cyan root, then the note marked 5, and back.",
+                       kind: .arpeggio(root: .c, isMinor: false)),
+                Lesson(id: 4, title: "Add the third",
+                       subtitle: "The third spells the rest of the chord. This is A minor, and the note marked 3 is the flattened third that makes it minor. Walk root, 3, 5.",
+                       kind: .arpeggio(root: .a, isMinor: true)),
+                Lesson(id: 5, title: "Walk a I-IV-V",
+                       subtitle: "In C the I, IV, and V roots are C, F, and G. Move between those roots to outline a progression. There is no Chord Library on bass, so this is your sandbox.",
+                       kind: .arpeggio(root: .c, isMinor: false)),
+            ]
+        }
+        return LearningStage(
+            id: 3, number: "03", title: "Chords",
+            subtitle: "Chord shapes on guitar, root and arpeggio moves on bass",
+            lessons: lessons)
+    }
 
     private static let scalesAndKeys = LearningStage(
         id: 4, number: "04", title: "Scales & Keys",

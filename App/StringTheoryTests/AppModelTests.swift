@@ -194,6 +194,34 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(last.handoff, .solo)
     }
 
+    func testStageThreeGuitarHasFiveChordLessons() {
+        let stage = LearningPath.stages(for: .guitar)[2]
+        XCTAssertEqual(stage.id, 3)
+        XCTAssertEqual(stage.lessons.count, 5)
+        for lesson in stage.lessons {
+            if case .chords = lesson.kind { } else {
+                XCTFail("guitar stage 3 lesson \(lesson.id) should be a .chords lesson")
+            }
+        }
+    }
+
+    func testStageThreeGuitarLastLessonHandsOffToChordLibrary() {
+        let last = LearningPath.stages(for: .guitar)[2].lessons[4]
+        XCTAssertEqual(last.handoff, .chords)
+    }
+
+    func testStageThreeBassHasFiveArpeggioLessonsWithNoHandoff() {
+        let stage = LearningPath.stages(for: .bass)[2]
+        XCTAssertEqual(stage.id, 3)
+        XCTAssertEqual(stage.lessons.count, 5)
+        for lesson in stage.lessons {
+            if case .arpeggio = lesson.kind { } else {
+                XCTFail("bass stage 3 lesson \(lesson.id) should be a .arpeggio lesson")
+            }
+            XCTAssertNil(lesson.handoff, "bass has no Chord Library, so no handoff")
+        }
+    }
+
     func testCompletingEveryStageReachesFullProgress() {
         // Stage 2 differs by instrument, so check the whole path on both.
         for instrument in [Instrument.guitar, .bass] {
