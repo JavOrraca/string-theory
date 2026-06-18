@@ -98,6 +98,55 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(scalesTab.isSelected)
     }
 
+    /// With stages 1-4 pre-completed, walks the five Improvisation lessons,
+    /// plays the backing loop on lesson 2, and confirms the final handoff opens
+    /// the Solo Practice tab. Exercises BackingLessonView and the backing
+    /// transport at runtime.
+    @MainActor
+    func testImprovStageFlow() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uitest-reset", "-uitest-unlock-improv"]
+        app.launch()
+
+        // Onboarding (a fresh suite still needs it).
+        XCTAssertTrue(app.staticTexts["Pick your instrument"].waitForExistence(timeout: 5))
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.staticTexts["Which hand frets?"].waitForExistence(timeout: 3))
+        app.buttons["Enter the path"].tap()
+
+        // Stage 5 is active because 1-4 are pre-completed.
+        XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
+        app.staticTexts["Improvisation"].tap()
+
+        // Lesson 1 is the static safe-notes neck.
+        XCTAssertTrue(app.staticTexts["Safe notes"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+
+        // Lesson 2 plays the backing loop: Play toggles to Stop and back.
+        XCTAssertTrue(app.staticTexts["Hear the backing"].waitForExistence(timeout: 3))
+        app.buttons["Play backing track"].tap()
+        XCTAssertTrue(app.buttons["Stop backing track"].waitForExistence(timeout: 3))
+        app.buttons["Stop backing track"].tap()
+        XCTAssertTrue(app.buttons["Play backing track"].waitForExistence(timeout: 3))
+
+        // Step through to the last lesson.
+        app.buttons["Next"].tap()   // 3
+        XCTAssertTrue(app.staticTexts["Target the root"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()   // 4
+        XCTAssertTrue(app.staticTexts["Short phrases"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()   // 5
+
+        // Last lesson hands off to the Solo tab.
+        XCTAssertTrue(app.staticTexts["Take a solo"].waitForExistence(timeout: 3))
+        app.buttons["Open Solo Practice"].tap()
+
+        // The handoff dismissed the lesson and switched to the Solo tab.
+        // The tab bar is always on screen, so its selection is the robust signal.
+        let soloTab = app.tabBars.buttons["Solo"]
+        XCTAssertTrue(soloTab.waitForExistence(timeout: 3))
+        XCTAssertTrue(soloTab.isSelected)
+    }
+
     /// Completes Fretboard Basics, then walks the Tabs stage: lesson 1 renders,
     /// Play/Stop works, and stepping to the end finishes back on the path.
     @MainActor

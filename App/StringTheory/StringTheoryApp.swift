@@ -11,12 +11,14 @@ struct StringTheoryApp: App {
             let defaults = UserDefaults(suiteName: "uitest")!
             defaults.removePersistentDomain(forName: "uitest")
             let model = AppModel(defaults: defaults)
-            // -uitest-unlock-scales pre-completes stages 1-3 so a test can reach stage 4.
-            if args.contains("-uitest-unlock-scales") {
-                for stage in LearningPath.stages(for: model.instrument) where stage.id < 4 {
-                    for lesson in stage.lessons {
-                        model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
-                    }
+            // Pre-complete earlier stages so a test can land on a later one:
+            // -uitest-unlock-scales reaches stage 4, -uitest-unlock-improv reaches stage 5.
+            let unlockBelow = args.contains("-uitest-unlock-improv") ? 5
+                            : args.contains("-uitest-unlock-scales") ? 4
+                            : 0
+            for stage in LearningPath.stages(for: model.instrument) where stage.id < unlockBelow {
+                for lesson in stage.lessons {
+                    model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
                 }
             }
             _model = State(initialValue: model)
