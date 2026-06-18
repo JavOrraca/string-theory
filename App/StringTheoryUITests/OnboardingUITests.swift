@@ -149,6 +149,50 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(soloTab.isSelected)
     }
 
+    /// With stages 1-2 pre-completed, walks the five guitar Chords lessons,
+    /// steps a chord diagram, and confirms the final handoff opens the Chord
+    /// Library tab. Exercises ChordsLessonView at runtime.
+    @MainActor
+    func testChordsStageFlow() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uitest-reset", "-uitest-unlock-chords"]
+        app.launch()
+
+        // Onboarding (default instrument is guitar).
+        XCTAssertTrue(app.staticTexts["Pick your instrument"].waitForExistence(timeout: 5))
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.staticTexts["Which hand frets?"].waitForExistence(timeout: 3))
+        app.buttons["Enter the path"].tap()
+
+        // Stage 3 is active because 1-2 are pre-completed. The card title "Chords"
+        // collides with the tab button, so tap the stage card by its a11y label.
+        XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
+        let chordsStage = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Stage 03: Chords")).firstMatch
+        XCTAssertTrue(chordsStage.waitForExistence(timeout: 3))
+        chordsStage.tap()
+
+        // Walk the five lessons.
+        XCTAssertTrue(app.staticTexts["Reading a chord diagram"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["E and Em"].waitForExistence(timeout: 3))
+        // Step the diagram from E to Em.
+        app.buttons["Show Em"].tap()
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["A and Am"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["D and Dm"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+
+        // Last lesson hands off to the Chord Library.
+        XCTAssertTrue(app.staticTexts["G and C"].waitForExistence(timeout: 3))
+        app.buttons["Open the Chord Library"].tap()
+
+        // The handoff dismissed the lesson and switched to the Chords tab.
+        let chordsTab = app.tabBars.buttons["Chords"]
+        XCTAssertTrue(chordsTab.waitForExistence(timeout: 3))
+        XCTAssertTrue(chordsTab.isSelected)
+    }
+
     /// Completes Fretboard Basics, then walks the Tabs stage: lesson 1 renders,
     /// Play/Stop works, and stepping to the end finishes back on the path.
     @MainActor

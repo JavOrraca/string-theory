@@ -12,10 +12,12 @@ struct StringTheoryApp: App {
             defaults.removePersistentDomain(forName: "uitest")
             let model = AppModel(defaults: defaults)
             // Pre-complete earlier stages so a test can land on a later one:
-            // -uitest-unlock-scales reaches stage 4, -uitest-unlock-improv reaches stage 5.
-            // If both flags are present, the higher unlock (improv) wins.
+            // -uitest-unlock-chords reaches stage 3, -uitest-unlock-scales reaches
+            // stage 4, -uitest-unlock-improv reaches stage 5. If more than one is
+            // present, the higher unlock wins.
             let unlockBelow = args.contains("-uitest-unlock-improv") ? 5
                             : args.contains("-uitest-unlock-scales") ? 4
+                            : args.contains("-uitest-unlock-chords") ? 3
                             : 0
             for stage in LearningPath.stages(for: model.instrument) where stage.id < unlockBelow {
                 for lesson in stage.lessons {
