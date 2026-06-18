@@ -195,6 +195,48 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(chordsTab.isSelected)
     }
 
+    /// Onboards as a bassist, then walks the five bass Chords lessons (the
+    /// root-and-arpeggio track). Exercises ArpeggioLessonView at runtime and
+    /// confirms the bass track has no Chord Library handoff: the last lesson
+    /// shows Finish and returns to the path.
+    @MainActor
+    func testBassArpeggioStageFlow() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uitest-reset", "-uitest-unlock-chords"]
+        app.launch()
+
+        // Onboarding: pick Bass (the stage-1/2 unlock keys match across instruments).
+        XCTAssertTrue(app.staticTexts["Pick your instrument"].waitForExistence(timeout: 5))
+        app.staticTexts["Bass"].tap()
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.staticTexts["Which hand frets?"].waitForExistence(timeout: 3))
+        app.buttons["Enter the path"].tap()
+
+        // Stage 3 is active; open the bass Chords (arpeggio) track. The card title
+        // "Chords" collides with the tab button, so tap it by its a11y label.
+        XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
+        let chordsStage = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Stage 03: Chords")).firstMatch
+        XCTAssertTrue(chordsStage.waitForExistence(timeout: 3))
+        chordsStage.tap()
+
+        // Walk the five bass arpeggio lessons.
+        XCTAssertTrue(app.staticTexts["Play the root"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Find every root"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Root and fifth"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Add the third"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+
+        // The last bass lesson has no handoff (the Chord Library is guitar only):
+        // it shows Finish and returns to the path.
+        XCTAssertTrue(app.staticTexts["Walk a I-IV-V"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["Finish"].waitForExistence(timeout: 3))
+        app.buttons["Finish"].tap()
+        XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
+    }
+
     /// Completes Fretboard Basics, then walks the Tabs stage: lesson 1 renders,
     /// Play/Stop works, and stepping to the end finishes back on the path.
     @MainActor
