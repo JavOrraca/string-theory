@@ -170,4 +170,35 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.status(for: model.stages[3]), .done)
         XCTAssertEqual(model.status(for: model.stages[4]), .active)
     }
+
+    func testStageFiveImprovCurriculum() {
+        let stage = LearningPath.stages(for: .guitar)[4]
+        XCTAssertEqual(stage.id, 5)
+        XCTAssertEqual(stage.lessons.count, 5)
+        // Lesson 1 reuses the static scale neck (safe notes); 2-5 drive the loop.
+        if case .scale = stage.lessons[0].kind { } else {
+            XCTFail("stage 5 lesson 1 should be a .scale lesson")
+        }
+        for lesson in stage.lessons.dropFirst() {
+            if case .backing = lesson.kind { } else {
+                XCTFail("stage 5 lesson \(lesson.id) should be a .backing lesson")
+            }
+        }
+    }
+
+    func testStageFiveLastLessonHandsOffToSolo() {
+        let last = LearningPath.stages(for: .guitar)[4].lessons[4]
+        XCTAssertEqual(last.handoff, .solo)
+    }
+
+    func testCompletingEveryStageReachesFullProgress() {
+        let model = freshModel()
+        for stage in model.stages {
+            for lesson in stage.lessons {
+                model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
+            }
+        }
+        XCTAssertEqual(model.overallPercent, 100)
+        XCTAssertEqual(model.status(for: model.stages[4]), .done)
+    }
 }

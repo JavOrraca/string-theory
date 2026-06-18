@@ -365,6 +365,22 @@ enum LearningPath {
     private static let improvisation = LearningStage(
         id: 5, number: "05", title: "Improvisation",
         subtitle: "Solo over a backing track using only safe notes",
-        lessons: [Lesson(id: 1, title: "Improvisation",
-                         subtitle: "Watch the neck as the riff plays.", kind: .tab(.drift))])
+        lessons: [
+            Lesson(id: 1, title: "Safe notes",
+                   subtitle: "Stage 4's scale is now your safety net. Every lit note in A minor pentatonic fits this backing track. Tap any one to hear it.",
+                   kind: .scale(key: .a, type: .minorPentatonic, showDegrees: true)),
+            Lesson(id: 2, title: "Hear the backing",
+                   subtitle: "Press Play backing. Four chords loop, the one playing now lights up, and its root pulses on the neck.",
+                   kind: .backing(key: .a, type: .minorPentatonic)),
+            Lesson(id: 3, title: "Target the root",
+                   subtitle: "As each chord comes around, find its pulsing root and tap it. Landing on the root always sounds resolved.",
+                   kind: .backing(key: .a, type: .minorPentatonic)),
+            Lesson(id: 4, title: "Short phrases",
+                   subtitle: "Play three or four safe notes, then leave space. Short phrases with rests say more than a long scramble.",
+                   kind: .backing(key: .a, type: .minorPentatonic)),
+            Lesson(id: 5, title: "Take a solo",
+                   subtitle: "Press Play backing and improvise over a full loop using only safe notes. When you are ready, open Solo Practice to keep going.",
+                   kind: .backing(key: .a, type: .minorPentatonic),
+                   handoff: .solo),
+        ])
 }
