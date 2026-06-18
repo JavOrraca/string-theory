@@ -338,8 +338,24 @@ enum LearningPath {
     private static let scalesAndKeys = LearningStage(
         id: 4, number: "04", title: "Scales & Keys",
         subtitle: "Major & pentatonic patterns across the neck",
-        lessons: [Lesson(id: 1, title: "Scales & Keys",
-                         subtitle: "Watch the neck as the riff plays.", kind: .tab(.drift))])
+        lessons: [
+            Lesson(id: 1, title: "What a scale is",
+                   subtitle: "A scale is the set of notes that fit a key. This is E minor pentatonic. The cyan note is the root. Tap any note to hear it.",
+                   kind: .scale(key: .e, type: .minorPentatonic)),
+            Lesson(id: 2, title: "The root and the degrees",
+                   subtitle: "Every note shows its scale degree, and the root is 1. Tap up from the root to hear the degrees climb.",
+                   kind: .scale(key: .e, type: .minorPentatonic)),
+            Lesson(id: 3, title: "Minor vs major pentatonic",
+                   subtitle: "Same key, brighter sound. This is E major pentatonic. Compare it to the minor shape you just saw.",
+                   kind: .scale(key: .e, type: .majorPentatonic)),
+            Lesson(id: 4, title: "Same shape, new key",
+                   subtitle: "Move the whole pattern up and the key changes with it. This is A minor pentatonic: same shape, new root.",
+                   kind: .scale(key: .a, type: .minorPentatonic)),
+            Lesson(id: 5, title: "Explore on your own",
+                   subtitle: "Now pick any key and scale yourself and watch the whole neck redraw.",
+                   kind: .scale(key: .a, type: .minorPentatonic),
+                   handoff: .scales),
+        ])
 
     private static let improvisation = LearningStage(
         id: 5, number: "05", title: "Improvisation",

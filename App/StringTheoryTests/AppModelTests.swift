@@ -132,4 +132,31 @@ final class AppModelTests: XCTestCase {
         model.selectedTab = .scales
         XCTAssertEqual(model.selectedTab, .scales)
     }
+
+    func testStageFourHasFiveScaleLessons() {
+        let stage = LearningPath.stages(for: .guitar)[3]
+        XCTAssertEqual(stage.id, 4)
+        XCTAssertEqual(stage.lessons.count, 5)
+        for lesson in stage.lessons {
+            if case .scale = lesson.kind { } else {
+                XCTFail("stage 4 lesson \(lesson.id) is not a .scale lesson")
+            }
+        }
+    }
+
+    func testStageFourLastLessonHandsOffToScales() {
+        let last = LearningPath.stages(for: .guitar)[3].lessons[4]
+        XCTAssertEqual(last.handoff, .scales)
+    }
+
+    func testCompletingStagesThroughFourUnlocksFive() {
+        let model = freshModel()
+        for stage in model.stages where stage.id <= 4 {
+            for lesson in stage.lessons {
+                model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
+            }
+        }
+        XCTAssertEqual(model.status(for: model.stages[3]), .done)
+        XCTAssertEqual(model.status(for: model.stages[4]), .active)
+    }
 }
