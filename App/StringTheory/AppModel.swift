@@ -226,11 +226,13 @@ enum StageStatus {
 }
 
 /// What a lesson presents. `tab` plays any riff on the learner's own tuning;
-/// `reading` is a short text lesson (used as real per-stage content lands).
+/// `reading` is a short text lesson (used as real per-stage content lands);
+/// `scale` shows scale degrees on the neck, tap-to-hear.
 enum LessonKind: Hashable {
     case tab(Riff)
     case reading(String)
     case explore(ExploreLesson)
+    case scale(key: Note, type: ScaleType)
 }
 
 /// A guided fretboard exploration used by the Fretboard Basics lessons.
@@ -245,6 +247,9 @@ struct Lesson: Identifiable, Hashable {
     let title: String
     let subtitle: String
     let kind: LessonKind
+    /// When set, this lesson's forward button opens the named tool tab instead
+    /// of just advancing or dismissing.
+    var handoff: MainTab? = nil
 }
 
 struct LearningStage: Identifiable, Hashable {

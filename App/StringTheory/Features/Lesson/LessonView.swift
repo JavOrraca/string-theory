@@ -80,6 +80,8 @@ struct StageLessonsView: View {
                 TabLessonView(riff: riff)
             case .explore(let exercise):
                 ExploreLessonView(exercise: exercise)
+            case .scale(let key, let type):
+                ScaleLessonView(key: key, type: type)
             case .reading(let body):
                 Text(body)
                     .font(Typography.body(15))
@@ -119,15 +121,23 @@ struct StageLessonsView: View {
 
                     Spacer(minLength: 0)
 
-                    Button(isLastLesson ? "Finish" : "Next") { advance() }
-                        .buttonStyle(PrimaryButtonStyle())
+                    forwardButton
                 }
             }
-        case .reading, .explore:
-            bottomBar {
-                Button(isLastLesson ? "Finish" : "Next") { advance() }
-                    .buttonStyle(PrimaryButtonStyle())
-            }
+        case .reading, .explore, .scale:
+            bottomBar { forwardButton }
+        }
+    }
+
+    /// The primary forward control. Hands off to a tool tab when the lesson sets
+    /// `handoff`, otherwise advances (or finishes) the stage.
+    @ViewBuilder private var forwardButton: some View {
+        if let tab = lesson.handoff {
+            Button(handoffLabel(tab)) { handoff(to: tab) }
+                .buttonStyle(PrimaryButtonStyle())
+        } else {
+            Button(isLastLesson ? "Finish" : "Next") { advance() }
+                .buttonStyle(PrimaryButtonStyle())
         }
     }
 
@@ -153,6 +163,29 @@ struct StageLessonsView: View {
         model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
         model.stopRiff()
         if isLastLesson { dismiss() } else { index += 1 }
+    }
+
+    /// Marks the lesson complete, stops audio, pops back to the path, and
+    /// switches to the tool tab. For a `.scale` lesson it pre-selects the scale
+    /// just taught so the explorer opens on it.
+    private func handoff(to tab: MainTab) {
+        model.markLessonComplete(stageID: stage.id, lessonID: lesson.id)
+        model.stopRiff()
+        if case .scale(let key, let type) = lesson.kind {
+            model.scaleKey = key
+            model.scaleType = type
+        }
+        dismiss()
+        model.selectedTab = tab
+    }
+
+    private func handoffLabel(_ tab: MainTab) -> String {
+        switch tab {
+        case .scales: "Open the Scale Explorer"
+        case .chords: "Open the Chord Library"
+        case .solo:   "Open Solo Practice"
+        case .path:   "Back to Path"
+        }
     }
 }
 
@@ -319,6 +352,29 @@ private struct ExploreLessonView: View {
                                         startFret: 0, isLeftHanded: model.isLeftHanded),
             openNotes: model.openNotes,
             markers: markers,
+            onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .panel()
+    }
+}
+
+// MARK: - Scale lesson content (degrees on the neck, tap-to-hear)
+
+/// A scale on the learner's own neck: the core's `scaleMarkers` light the root
+/// in cyan and label every tone with its degree. Tapping a note plays it.
+private struct ScaleLessonView: View {
+    let key: Note
+    let type: ScaleType
+
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        FretboardView(
+            geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12,
+                                        startFret: 0, isLeftHanded: model.isLeftHanded),
+            openNotes: model.openNotes,
+            markers: scaleMarkers(instrument: model.instrument, key: key, scale: type, frets: 12),
             onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
