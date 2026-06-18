@@ -90,6 +90,10 @@ struct StageLessonsView: View {
                 ScaleLessonView(key: key, type: type, showDegrees: showDegrees)
             case .backing(let key, let type):
                 BackingLessonView(key: key, type: type)
+            case .chords(let ids):
+                ChordsLessonView(chordIDs: ids)
+            case .arpeggio(let root, let isMinor):
+                ArpeggioLessonView(root: root, isMinor: isMinor)
             case .reading(let body):
                 Text(body)
                     .font(Typography.body(15))
@@ -146,7 +150,7 @@ struct StageLessonsView: View {
                     forwardButton
                 }
             }
-        case .reading, .explore, .scale:
+        case .reading, .explore, .scale, .chords, .arpeggio:
             bottomBar { forwardButton }
         }
     }
@@ -485,5 +489,98 @@ private struct BackingLessonView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Chords lesson content (guitar diagrams, tap-to-hear)
+
+/// One or more guitar chord diagrams drawn with the core `chordMarkers` (rings
+/// for open strings, x for muted, note-labelled dots). When the lesson lists more
+/// than one chord, a row of name buttons steps between them. Tapping a dot plays
+/// its note. The shown chord is mirrored into `model.chordID`, so the stage's
+/// final handoff opens the Chord Library on it. Always a 6-string guitar voicing,
+/// matching the Chord Library and the prototype.
+private struct ChordsLessonView: View {
+    let chordIDs: [String]
+
+    @Environment(AppModel.self) private var model
+    @State private var index = 0
+
+    private var chord: Chord {
+        Chord.named(chordIDs[min(index, chordIDs.count - 1)]) ?? Chord.library[0]
+    }
+
+    private var soundedNotes: [Note] {
+        var seen = Set<Note>()
+        return chordMarkers(chord)
+            .filter { $0.kind != .muted }
+            .compactMap(\.note)
+            .filter { seen.insert($0).inserted }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if chordIDs.count > 1 {
+                HStack(spacing: 8) {
+                    ForEach(Array(chordIDs.enumerated()), id: \.offset) { i, id in
+                        let isActive = i == index
+                        Button {
+                            index = i
+                            model.chordID = id
+                        } label: {
+                            Text(Chord.named(id)?.name ?? id)
+                                .font(Typography.display(15, weight: .semibold))
+                                .foregroundStyle(isActive ? Theme.Palette.phosphor : Theme.Palette.textDim)
+                                .frame(maxWidth: .infinity, minHeight: 40)
+                                .background(RoundedRectangle(cornerRadius: 9).fill(isActive ? Theme.Palette.phosphor.opacity(0.16) : Color(oklchL: 0.2, c: 0.018, h: 250)))
+                                .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(isActive ? Theme.Palette.phosphor : Theme.Palette.hairline, lineWidth: 1))
+                        }
+                        .accessibilityLabel("Show \(Chord.named(id)?.name ?? id)")
+                        .accessibilityAddTraits(isActive ? [.isSelected] : [])
+                    }
+                }
+            }
+
+            FretboardView(
+                geometry: FretboardGeometry(stringCount: 6, fretCount: 5, startFret: 0, isLeftHanded: model.isLeftHanded),
+                openNotes: Tuning.guitar.strings.map(\.note),
+                markers: chordMarkers(chord),
+                onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .panel()
+
+            HStack(spacing: 8) {
+                Text("NOTES").sectionLabel()
+                Text(soundedNotes.map(\.name).joined(separator: " · "))
+                    .font(Typography.mono(13, weight: .semibold))
+                    .foregroundStyle(Theme.Palette.signalCyan)
+            }
+        }
+        .onAppear { model.chordID = chordIDs[0] }
+    }
+}
+
+// MARK: - Arpeggio lesson content (bass chord tones, tap-to-hear)
+
+/// A chord's root, third, and fifth across the bass neck, from the core
+/// `arpeggioMarkers`: the root glows cyan and is labelled R, the third and fifth
+/// are labelled 3 and 5. Tapping a note plays it. Used by the bass Chords track.
+private struct ArpeggioLessonView: View {
+    let root: Note
+    let isMinor: Bool
+
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        FretboardView(
+            geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12,
+                                        startFret: 0, isLeftHanded: model.isLeftHanded),
+            openNotes: model.openNotes,
+            markers: arpeggioMarkers(instrument: model.instrument, root: root, isMinor: isMinor, frets: 12),
+            onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .panel()
     }
 }

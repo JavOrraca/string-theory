@@ -231,13 +231,17 @@ enum StageStatus {
 /// `reading` is a short text lesson (used as real per-stage content lands);
 /// `scale` shows a scale on the neck, tap-to-hear, with `showDegrees` choosing
 /// whether each tone is labelled with its degree or left as a plain dot;
-/// `backing` is the Solo screen's neck driven by the backing loop, tap-to-hear.
+/// `backing` is the Solo screen's neck driven by the backing loop, tap-to-hear;
+/// `chords` shows one or more guitar chord diagrams (stepped) tap-to-hear;
+/// `arpeggio` shows a chord's root/third/fifth across the neck, tap-to-hear.
 enum LessonKind: Hashable {
     case tab(Riff)
     case reading(String)
     case explore(ExploreLesson)
     case scale(key: Note, type: ScaleType, showDegrees: Bool)
     case backing(key: Note, type: ScaleType)
+    case chords([String])
+    case arpeggio(root: Note, isMinor: Bool)
 }
 
 /// A guided fretboard exploration used by the Fretboard Basics lessons.
