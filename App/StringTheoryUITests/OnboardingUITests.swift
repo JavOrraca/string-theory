@@ -175,7 +175,9 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Reading a chord diagram"].waitForExistence(timeout: 3))
         app.buttons["Next"].tap()
         XCTAssertTrue(app.staticTexts["E and Em"].waitForExistence(timeout: 3))
-        // Step the diagram from E to Em.
+        // Step the diagram from E to Em. The picker row is separate from the
+        // lesson title, so wait for the button before tapping it.
+        XCTAssertTrue(app.buttons["Show Em"].waitForExistence(timeout: 3))
         app.buttons["Show Em"].tap()
         app.buttons["Next"].tap()
         XCTAssertTrue(app.staticTexts["A and Am"].waitForExistence(timeout: 3))
