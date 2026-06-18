@@ -20,7 +20,7 @@ struct HomeView: View {
     @State private var showSettings = false
 
     private var rows: [Stage] {
-        LearningPath.stages.map { stage in
+        model.stages.map { stage in
             Stage(
                 id: stage.id,
                 number: stage.number,
@@ -131,6 +131,7 @@ private struct StageListSection: View {
 private struct StageRow: View {
     let stage: Stage
     let isLast: Bool
+    @Environment(AppModel.self) private var model
 
     var body: some View {
         HStack(alignment: .top, spacing: 15) {
@@ -146,7 +147,7 @@ private struct StageRow: View {
             Group {
                 switch stage.status {
                 case .active:
-                    if let learning = LearningPath.stages.first(where: { $0.id == stage.id }) {
+                    if let learning = model.stages.first(where: { $0.id == stage.id }) {
                         NavigationLink(destination: StageLessonsView(stage: learning)) {
                             StageCard(stage: stage)
                         }

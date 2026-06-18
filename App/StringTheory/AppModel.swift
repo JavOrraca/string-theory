@@ -88,6 +88,10 @@ final class AppModel {
     // MARK: Derived state
 
     var tuning: Tuning { .standard(for: instrument) }
+
+    /// The learning path for the current instrument.
+    var stages: [LearningStage] { LearningPath.stages(for: instrument) }
+
     var openNotes: [Note] { tuning.strings.map(\.note) }
     var stringCount: Int { tuning.stringCount }
     var selectedChord: Chord { Chord.named(chordID) ?? Chord.library[0] }
@@ -133,14 +137,14 @@ final class AppModel {
     /// `locked` for everything after it.
     func status(for stage: LearningStage) -> StageStatus {
         if progress(for: stage) >= 1 { return .done }
-        let current = LearningPath.stages.first { progress(for: $0) < 1 }
+        let current = stages.first { progress(for: $0) < 1 }
         return stage.id == current?.id ? .active : .locked
     }
 
     var overallPercent: Int {
-        guard !LearningPath.stages.isEmpty else { return 0 }
-        let total = LearningPath.stages.reduce(0.0) { $0 + progress(for: $1) }
-        return Int((total / Double(LearningPath.stages.count) * 100).rounded())
+        guard !stages.isEmpty else { return 0 }
+        let total = stages.reduce(0.0) { $0 + progress(for: $1) }
+        return Int((total / Double(stages.count) * 100).rounded())
     }
 
     // MARK: Lesson transport
@@ -244,37 +248,50 @@ struct LearningStage: Identifiable, Hashable {
 }
 
 enum LearningPath {
-    // For now each stage has one interactive lesson. Phase 3 breaks Fretboard
-    // Basics into several, and later stages get their own content.
-    static let stages: [LearningStage] = [
-        LearningStage(id: 1, number: "01", title: "Fretboard Basics",
-                      subtitle: "String names · fret numbers · note at each position",
-                      lessons: [
-                          Lesson(id: 1, title: "Open strings",
-                                 subtitle: "These are your open strings, low to high. Tap each one to hear it.",
-                                 kind: .explore(.openStrings)),
-                          Lesson(id: 2, title: "Fret numbers",
-                                 subtitle: "Frets count up from the nut, each one a semitone higher. Tap a fret to hear it.",
-                                 kind: .explore(.fretNumbers)),
-                          Lesson(id: 3, title: "Find a note",
-                                 subtitle: "The same note lives in many places. Here is every A in the first few frets. Tap any to hear it.",
-                                 kind: .explore(.findNote(.a))),
-                      ]),
-        LearningStage(id: 2, number: "02", title: "Tabs",
-                      subtitle: "Read tablature as fretboard positions · short riffs",
-                      lessons: [Lesson(id: 1, title: "Read the riff",
-                                       subtitle: "Each number is a fret on that string.", kind: .fretboardRiff)]),
-        LearningStage(id: 3, number: "03", title: "Chords",
-                      subtitle: "Shapes & diagrams tied back to the notes you know",
-                      lessons: [Lesson(id: 1, title: "Chords",
-                                       subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)]),
-        LearningStage(id: 4, number: "04", title: "Scales & Keys",
-                      subtitle: "Major & pentatonic patterns across the neck",
-                      lessons: [Lesson(id: 1, title: "Scales & Keys",
-                                       subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)]),
-        LearningStage(id: 5, number: "05", title: "Improvisation",
-                      subtitle: "Solo over a backing track using only safe notes",
-                      lessons: [Lesson(id: 1, title: "Improvisation",
-                                       subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)]),
-    ]
+    /// The five stages, resolved for the chosen instrument. Stage 2 (Tabs) and,
+    /// in a later increment, stage 3 (Chords) differ by instrument; the rest are
+    /// the same and adapt through the shared fretboard geometry.
+    static func stages(for instrument: Instrument) -> [LearningStage] {
+        [fretboardBasics, tabs, chords, scalesAndKeys, improvisation]
+    }
+
+    private static let fretboardBasics = LearningStage(
+        id: 1, number: "01", title: "Fretboard Basics",
+        subtitle: "String names · fret numbers · note at each position",
+        lessons: [
+            Lesson(id: 1, title: "Open strings",
+                   subtitle: "These are your open strings, low to high. Tap each one to hear it.",
+                   kind: .explore(.openStrings)),
+            Lesson(id: 2, title: "Fret numbers",
+                   subtitle: "Frets count up from the nut, each one a semitone higher. Tap a fret to hear it.",
+                   kind: .explore(.fretNumbers)),
+            Lesson(id: 3, title: "Find a note",
+                   subtitle: "The same note lives in many places. Here is every A in the first few frets. Tap any to hear it.",
+                   kind: .explore(.findNote(.a))),
+        ])
+
+    // Stage 2 content lands in a later task. Keep a single stub for now.
+    private static let tabs = LearningStage(
+        id: 2, number: "02", title: "Tabs",
+        subtitle: "Read tablature as fretboard positions · short riffs",
+        lessons: [Lesson(id: 1, title: "Read the riff",
+                         subtitle: "Each number is a fret on that string.", kind: .fretboardRiff)])
+
+    private static let chords = LearningStage(
+        id: 3, number: "03", title: "Chords",
+        subtitle: "Shapes & diagrams tied back to the notes you know",
+        lessons: [Lesson(id: 1, title: "Chords",
+                         subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)])
+
+    private static let scalesAndKeys = LearningStage(
+        id: 4, number: "04", title: "Scales & Keys",
+        subtitle: "Major & pentatonic patterns across the neck",
+        lessons: [Lesson(id: 1, title: "Scales & Keys",
+                         subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)])
+
+    private static let improvisation = LearningStage(
+        id: 5, number: "05", title: "Improvisation",
+        subtitle: "Solo over a backing track using only safe notes",
+        lessons: [Lesson(id: 1, title: "Improvisation",
+                         subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)])
 }

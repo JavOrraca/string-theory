@@ -35,19 +35,21 @@ final class AppModelTests: XCTestCase {
 
     func testFreshUserStartsAtZeroWithFirstStageActive() {
         let model = freshModel()
+        let guitarStages = LearningPath.stages(for: .guitar)
         XCTAssertEqual(model.overallPercent, 0)
-        XCTAssertEqual(model.status(for: LearningPath.stages[0]), .active)
-        XCTAssertEqual(model.status(for: LearningPath.stages[1]), .locked)
+        XCTAssertEqual(model.status(for: guitarStages[0]), .active)
+        XCTAssertEqual(model.status(for: guitarStages[1]), .locked)
     }
 
     func testCompletingFirstStageUnlocksTheSecond() {
         let model = freshModel()
-        let first = LearningPath.stages[0]
+        let guitarStages = LearningPath.stages(for: .guitar)
+        let first = guitarStages[0]
         for lesson in first.lessons {
             model.markLessonComplete(stageID: first.id, lessonID: lesson.id)
         }
         XCTAssertEqual(model.status(for: first), .done)
-        XCTAssertEqual(model.status(for: LearningPath.stages[1]), .active)
+        XCTAssertEqual(model.status(for: guitarStages[1]), .active)
         XCTAssertGreaterThan(model.overallPercent, 0)
     }
 
@@ -60,7 +62,7 @@ final class AppModelTests: XCTestCase {
         first.setInstrument(.bass)
         first.setLeftHanded(true)
         first.completeOnboarding()
-        let stage = LearningPath.stages[0]
+        let stage = LearningPath.stages(for: .guitar)[0]
         first.markLessonComplete(stageID: stage.id, lessonID: stage.lessons[0].id)
 
         let reloaded = AppModel(defaults: defaults)
@@ -84,5 +86,21 @@ final class AppModelTests: XCTestCase {
         model.setTempo(90)
 
         XCTAssertEqual(AppModel(defaults: defaults).tempo, 90)
+    }
+
+    func testLearningPathIsInstrumentAware() {
+        let guitar = LearningPath.stages(for: .guitar)
+        let bass = LearningPath.stages(for: .bass)
+        XCTAssertEqual(guitar.count, 5)
+        XCTAssertEqual(bass.count, 5)
+        XCTAssertEqual(guitar.map(\.id), [1, 2, 3, 4, 5])
+        XCTAssertEqual(bass.map(\.id), [1, 2, 3, 4, 5])
+    }
+
+    func testModelExposesInstrumentStages() {
+        let model = freshModel()                 // guitar by default
+        XCTAssertEqual(model.stages.map(\.id), [1, 2, 3, 4, 5])
+        model.setInstrument(.bass)
+        XCTAssertEqual(model.stages.map(\.id), [1, 2, 3, 4, 5])
     }
 }
