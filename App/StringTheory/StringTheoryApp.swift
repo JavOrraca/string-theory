@@ -13,6 +13,7 @@ struct StringTheoryApp: App {
             let model = AppModel(defaults: defaults)
             // Pre-complete earlier stages so a test can land on a later one:
             // -uitest-unlock-scales reaches stage 4, -uitest-unlock-improv reaches stage 5.
+            // If both flags are present, the higher unlock (improv) wins.
             let unlockBelow = args.contains("-uitest-unlock-improv") ? 5
                             : args.contains("-uitest-unlock-scales") ? 4
                             : 0

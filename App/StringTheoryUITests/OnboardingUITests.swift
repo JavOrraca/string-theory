@@ -129,7 +129,9 @@ final class OnboardingUITests: XCTestCase {
         app.buttons["Stop backing track"].tap()
         XCTAssertTrue(app.buttons["Play backing track"].waitForExistence(timeout: 3))
 
-        // Step through to the last lesson.
+        // Step through to the last lesson. Lesson 2's transport was just
+        // exercised, so confirm the button is settled before the first advance.
+        XCTAssertTrue(app.buttons["Next"].waitForExistence(timeout: 3))
         app.buttons["Next"].tap()   // 3
         XCTAssertTrue(app.staticTexts["Target the root"].waitForExistence(timeout: 3))
         app.buttons["Next"].tap()   // 4
