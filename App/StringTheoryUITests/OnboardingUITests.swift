@@ -59,6 +59,45 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
     }
 
+    /// With stages 1-3 pre-completed, walks the five Scales & Keys lessons and
+    /// confirms the final handoff opens the Scale Explorer tab.
+    @MainActor
+    func testScalesStageFlow() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uitest-reset", "-uitest-unlock-scales"]
+        app.launch()
+
+        // Onboarding (a fresh suite still needs it).
+        XCTAssertTrue(app.staticTexts["Pick your instrument"].waitForExistence(timeout: 5))
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.staticTexts["Which hand frets?"].waitForExistence(timeout: 3))
+        app.buttons["Enter the path"].tap()
+
+        // Stage 4 is active because 1-3 are pre-completed.
+        XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
+        app.staticTexts["Scales & Keys"].tap()
+
+        // Walk the five scale lessons.
+        XCTAssertTrue(app.staticTexts["What a scale is"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["The root and the degrees"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Minor vs major pentatonic"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Same shape, new key"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+
+        // Last lesson hands off to the Scales tab.
+        XCTAssertTrue(app.staticTexts["Explore on your own"].waitForExistence(timeout: 3))
+        app.buttons["Open the Scale Explorer"].tap()
+
+        // The handoff dismissed the lesson and switched to the Scale Explorer tab.
+        // The tab bar is always on screen, so its selection is the robust signal.
+        let scalesTab = app.tabBars.buttons["Scales"]
+        XCTAssertTrue(scalesTab.waitForExistence(timeout: 3))
+        XCTAssertTrue(scalesTab.isSelected)
+    }
+
     /// Completes Fretboard Basics, then walks the Tabs stage: lesson 1 renders,
     /// Play/Stop works, and stepping to the end finishes back on the path.
     @MainActor
