@@ -76,8 +76,8 @@ struct StageLessonsView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             switch lesson.kind {
-            case .fretboardRiff:
-                RiffLesson()
+            case .tab(let riff):
+                TabLessonView(riff: riff)
             case .explore(let exercise):
                 ExploreLessonView(exercise: exercise)
             case .reading(let body):
@@ -96,8 +96,33 @@ struct StageLessonsView: View {
 
     @ViewBuilder private var footer: some View {
         switch lesson.kind {
-        case .fretboardRiff:
-            if lessonComplete { completedBar } else { transportBar }
+        case .tab:
+            bottomBar {
+                HStack(spacing: 16) {
+                    VStack(spacing: 2) {
+                        Text(model.riffStep.map { String(format: "%02d", $0 + 1) } ?? "--")
+                            .font(Typography.mono(20, weight: .bold))
+                            .foregroundStyle(Theme.Palette.phosphor)
+                            .glow(Theme.Palette.phosphor, radius: 10)
+                            .contentTransition(.numericText())
+                        Text("STEP")
+                            .font(Typography.mono(9)).tracking(1.0)
+                            .foregroundStyle(Theme.Palette.textDim)
+                    }
+                    .frame(minWidth: 40)
+
+                    Button { model.toggleRiff(currentRiff) } label: {
+                        Text(model.isPlayingRiff ? "■  Stop" : "▶  Play")
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .accessibilityLabel(model.isPlayingRiff ? "Stop riff" : "Play riff")
+
+                    Spacer(minLength: 0)
+
+                    Button(isLastLesson ? "Finish" : "Next") { advance() }
+                        .buttonStyle(PrimaryButtonStyle())
+                }
+            }
         case .reading, .explore:
             bottomBar {
                 Button(isLastLesson ? "Finish" : "Next") { advance() }
@@ -106,54 +131,10 @@ struct StageLessonsView: View {
         }
     }
 
-    private var transportBar: some View {
-        bottomBar {
-            HStack(spacing: 16) {
-                VStack(spacing: 2) {
-                    Text(model.riffStep.map { String(format: "%02d", $0 + 1) } ?? "--")
-                        .font(Typography.mono(22, weight: .bold))
-                        .foregroundStyle(Theme.Palette.phosphor)
-                        .glow(Theme.Palette.phosphor, radius: 10)
-                        .contentTransition(.numericText())
-                    Text("STEP")
-                        .font(Typography.mono(9)).tracking(1.0)
-                        .foregroundStyle(Theme.Palette.textDim)
-                }
-                .frame(minWidth: 44)
-
-                Button { model.toggleRiff() } label: {
-                    Text(model.isPlayingRiff ? "■  Stop" : "▶  Play riff")
-                }
-                .buttonStyle(PrimaryButtonStyle())
-                .accessibilityLabel(model.isPlayingRiff ? "Stop riff" : "Play riff")
-            }
-        }
-    }
-
-    private var completedBar: some View {
-        bottomBar {
-            VStack(spacing: 12) {
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(Theme.Palette.phosphor)
-                    Text("Lesson complete")
-                        .font(Typography.display(15, weight: .semibold))
-                        .foregroundStyle(Theme.Palette.text)
-                    Spacer()
-                }
-                HStack(spacing: 10) {
-                    if isLastLesson {
-                        Button("Back to Main") { back() }
-                            .buttonStyle(PrimaryButtonStyle())
-                    } else {
-                        Button("Back to Main") { back() }
-                            .buttonStyle(SecondaryButtonStyle())
-                        Button("Next lesson") { advance() }
-                            .buttonStyle(PrimaryButtonStyle())
-                    }
-                }
-            }
-        }
+    /// The riff for the current lesson, when it is a tab lesson.
+    private var currentRiff: Riff {
+        if case .tab(let riff) = lesson.kind { return riff }
+        return .drift
     }
 
     private func bottomBar<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
@@ -173,22 +154,20 @@ struct StageLessonsView: View {
         model.stopRiff()
         if isLastLesson { dismiss() } else { index += 1 }
     }
-
-    private func back() {
-        model.stopRiff()
-        dismiss()
-    }
 }
 
-// MARK: - Riff lesson content (fretboard + tab)
+// MARK: - Tab lesson content (fretboard + tab)
 
-/// The interactive fretboard locked to a tab staff. As the riff plays, the
-/// current note lights up on the neck and the matching tab column highlights.
-private struct RiffLesson: View {
+/// The interactive fretboard locked to a tab staff for one riff. As the riff
+/// plays, the current note lights up on the neck and the matching tab column
+/// highlights. Renders on the learner's own instrument and is tap-to-hear.
+private struct TabLessonView: View {
+    let riff: Riff
+
     @Environment(AppModel.self) private var model
 
-    private let riff = Riff.drift
-    private var guitarOpenNotes: [Note] { Tuning.guitar.strings.map(\.note) }
+    private var openNotes: [Note] { model.openNotes }
+    private var stringCount: Int { model.stringCount }
 
     private var lessonMarkers: [Marker] {
         let activeStep = model.riffStep
@@ -206,8 +185,8 @@ private struct RiffLesson: View {
 
     private var tabRows: [TabRow] {
         let activeStep = model.riffStep
-        return stride(from: 5, through: 0, by: -1).map { sIdx in
-            let note = guitarOpenNotes.indices.contains(sIdx) ? guitarOpenNotes[sIdx].name : ""
+        return stride(from: stringCount - 1, through: 0, by: -1).map { sIdx in
+            let note = openNotes.indices.contains(sIdx) ? openNotes[sIdx].name : ""
             let cells = riff.steps.enumerated().map { i, step -> TabCell in
                 let has = step.string == sIdx
                 return TabCell(fret: has ? step.fret : nil, isActive: has && i == activeStep)
@@ -219,9 +198,10 @@ private struct RiffLesson: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             FretboardView(
-                geometry: FretboardGeometry(stringCount: 6, fretCount: 5, startFret: 0, isLeftHanded: model.isLeftHanded),
-                openNotes: guitarOpenNotes,
-                markers: lessonMarkers
+                geometry: FretboardGeometry(stringCount: stringCount, fretCount: 5, startFret: 0, isLeftHanded: model.isLeftHanded),
+                openNotes: openNotes,
+                markers: lessonMarkers,
+                onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .panel()
@@ -230,7 +210,7 @@ private struct RiffLesson: View {
                 HStack {
                     Text("TABLATURE · \(riff.name)").sectionLabel()
                     Spacer()
-                    Text("♩ = 110").font(Typography.mono(10)).foregroundStyle(Theme.Palette.textDim)
+                    Text("♩ = \(model.tempo)").font(Typography.mono(10)).foregroundStyle(Theme.Palette.textDim)
                 }
                 VStack(spacing: 0) {
                     ForEach(Array(tabRows.enumerated()), id: \.offset) { _, row in

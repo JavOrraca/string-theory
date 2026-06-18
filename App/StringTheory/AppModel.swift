@@ -149,13 +149,13 @@ final class AppModel {
 
     // MARK: Lesson transport
 
-    func toggleRiff() {
+    func toggleRiff(_ riff: Riff = .drift) {
         if isPlayingRiff {
             stopRiff()
         } else {
             stopBacking()
             riffRepetitions = 0
-            audio.playRiff(.drift, tuning: .guitar, stepDuration: riffStepDuration)
+            audio.playRiff(riff, tuning: tuning, stepDuration: riffStepDuration)
             isPlayingRiff = true
         }
     }
@@ -216,11 +216,10 @@ enum StageStatus {
     case done, active, locked
 }
 
-/// What a lesson presents. `fretboardRiff` is the interactive fretboard + tab
-/// demo we have today; `reading` is a short text lesson (used as real per-stage
-/// content lands).
+/// What a lesson presents. `tab` plays any riff on the learner's own tuning;
+/// `reading` is a short text lesson (used as real per-stage content lands).
 enum LessonKind: Hashable {
-    case fretboardRiff
+    case tab(Riff)
     case reading(String)
     case explore(ExploreLesson)
 }
@@ -275,23 +274,23 @@ enum LearningPath {
         id: 2, number: "02", title: "Tabs",
         subtitle: "Read tablature as fretboard positions · short riffs",
         lessons: [Lesson(id: 1, title: "Read the riff",
-                         subtitle: "Each number is a fret on that string.", kind: .fretboardRiff)])
+                         subtitle: "Each number is a fret on that string.", kind: .tab(.drift))])
 
     private static let chords = LearningStage(
         id: 3, number: "03", title: "Chords",
         subtitle: "Shapes & diagrams tied back to the notes you know",
         lessons: [Lesson(id: 1, title: "Chords",
-                         subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)])
+                         subtitle: "Watch the neck as the riff plays.", kind: .tab(.drift))])
 
     private static let scalesAndKeys = LearningStage(
         id: 4, number: "04", title: "Scales & Keys",
         subtitle: "Major & pentatonic patterns across the neck",
         lessons: [Lesson(id: 1, title: "Scales & Keys",
-                         subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)])
+                         subtitle: "Watch the neck as the riff plays.", kind: .tab(.drift))])
 
     private static let improvisation = LearningStage(
         id: 5, number: "05", title: "Improvisation",
         subtitle: "Solo over a backing track using only safe notes",
         lessons: [Lesson(id: 1, title: "Improvisation",
-                         subtitle: "Watch the neck as the riff plays.", kind: .fretboardRiff)])
+                         subtitle: "Watch the neck as the riff plays.", kind: .tab(.drift))])
 }
