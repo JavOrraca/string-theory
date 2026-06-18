@@ -270,9 +270,9 @@ struct LearningStage: Identifiable, Hashable {
 }
 
 enum LearningPath {
-    /// The five stages, resolved for the chosen instrument. Stage 2 (Tabs) and,
-    /// in a later increment, stage 3 (Chords) differ by instrument; the rest are
-    /// the same and adapt through the shared fretboard geometry.
+    /// The five stages, resolved for the chosen instrument. Stage 2 (Tabs) and
+    /// stage 3 (Chords) differ by instrument; the rest are the same and adapt
+    /// through the shared fretboard geometry.
     static func stages(for instrument: Instrument) -> [LearningStage] {
         [fretboardBasics, tabs(for: instrument), chords(for: instrument), scalesAndKeys, improvisation]
     }
@@ -363,10 +363,10 @@ enum LearningPath {
         case .bass:
             lessons = [
                 Lesson(id: 1, title: "Play the root",
-                       subtitle: "On bass you anchor a chord by playing its root. This is C, lit cyan everywhere it sits on the neck. Tap a cyan note to hear the root.",
+                       subtitle: "On bass you anchor a chord by playing its root. This is a C chord: the cyan notes are the root, and the dots marked 3 and 5 fill it out. For now, find the cyan roots and tap them.",
                        kind: .arpeggio(root: .c, isMinor: false)),
                 Lesson(id: 2, title: "Find every root",
-                       subtitle: "Move to G. The same root repeats up the neck and across strings. Find each cyan G and tap it.",
+                       subtitle: "Move to G. The cyan root repeats up the neck and across strings. Find each cyan G and tap it. The dots marked 3 and 5 are the rest of the chord, coming up next.",
                        kind: .arpeggio(root: .g, isMinor: false)),
                 Lesson(id: 3, title: "Root and fifth",
                        subtitle: "Root to fifth is the classic bass move. Play the cyan root, then the note marked 5, and back.",
@@ -375,7 +375,7 @@ enum LearningPath {
                        subtitle: "The third spells the rest of the chord. This is A minor, and the note marked 3 is the flattened third that makes it minor. Walk root, 3, 5.",
                        kind: .arpeggio(root: .a, isMinor: true)),
                 Lesson(id: 5, title: "Walk a I-IV-V",
-                       subtitle: "In C the I, IV, and V roots are C, F, and G. Move between those roots to outline a progression. There is no Chord Library on bass, so this is your sandbox.",
+                       subtitle: "This is C, the I chord, with its third and fifth marked. In C the IV and V are F and G. Use the cyan root as home and explore. There is no Chord Library on bass, so this is your sandbox.",
                        kind: .arpeggio(root: .c, isMinor: false)),
             ]
         }
