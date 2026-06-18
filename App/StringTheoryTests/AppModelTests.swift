@@ -103,4 +103,23 @@ final class AppModelTests: XCTestCase {
         model.setInstrument(.bass)
         XCTAssertEqual(model.stages.map(\.id), [1, 2, 3, 4, 5])
     }
+
+    func testStageTwoHasFiveLessonsPerInstrument() {
+        XCTAssertEqual(LearningPath.stages(for: .guitar)[1].lessons.count, 5)
+        XCTAssertEqual(LearningPath.stages(for: .bass)[1].lessons.count, 5)
+    }
+
+    func testStageTwoFinalLessonDiffersByInstrument() {
+        let guitarLast = LearningPath.stages(for: .guitar)[1].lessons[4].title
+        let bassLast = LearningPath.stages(for: .bass)[1].lessons[4].title
+        XCTAssertNotEqual(guitarLast, bassLast)
+    }
+
+    func testCompletingStagesOneAndTwoUnlocksThree() {
+        let model = freshModel()                                  // guitar
+        for l in model.stages[0].lessons { model.markLessonComplete(stageID: 1, lessonID: l.id) }
+        for l in model.stages[1].lessons { model.markLessonComplete(stageID: 2, lessonID: l.id) }
+        XCTAssertEqual(model.status(for: model.stages[1]), .done)
+        XCTAssertEqual(model.status(for: model.stages[2]), .active)
+    }
 }

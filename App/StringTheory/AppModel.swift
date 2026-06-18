@@ -251,7 +251,7 @@ enum LearningPath {
     /// in a later increment, stage 3 (Chords) differ by instrument; the rest are
     /// the same and adapt through the shared fretboard geometry.
     static func stages(for instrument: Instrument) -> [LearningStage] {
-        [fretboardBasics, tabs, chords, scalesAndKeys, improvisation]
+        [fretboardBasics, tabs(for: instrument), chords, scalesAndKeys, improvisation]
     }
 
     private static let fretboardBasics = LearningStage(
@@ -269,12 +269,51 @@ enum LearningPath {
                    kind: .explore(.findNote(.a))),
         ])
 
-    // Stage 2 content lands in a later task. Keep a single stub for now.
-    private static let tabs = LearningStage(
-        id: 2, number: "02", title: "Tabs",
-        subtitle: "Read tablature as fretboard positions · short riffs",
-        lessons: [Lesson(id: 1, title: "Read the riff",
-                         subtitle: "Each number is a fret on that string.", kind: .tab(.drift))])
+    private static func tabs(for instrument: Instrument) -> LearningStage {
+        let lessons: [Lesson]
+        switch instrument {
+        case .guitar:
+            lessons = [
+                Lesson(id: 1, title: "Reading a tab number",
+                       subtitle: "The lines are your strings, lowest at the bottom. A number is the fret to press on that string. Tap a number to hear it.",
+                       kind: .tab(.tabReadGuitar)),
+                Lesson(id: 2, title: "One string, climbing",
+                       subtitle: "Same string, higher frets, higher pitch. Tap each note, then press Play.",
+                       kind: .tab(.tabClimbGuitar)),
+                Lesson(id: 3, title: "Crossing strings",
+                       subtitle: "Now the riff jumps between the low two strings. Watch the neck light up as it plays.",
+                       kind: .tab(.tabCrossGuitar)),
+                Lesson(id: 4, title: "Timing and repeats",
+                       subtitle: "A short pattern that loops. Press Play and let it come around a few times.",
+                       kind: .tab(.tabGrooveGuitar)),
+                Lesson(id: 5, title: "Play \u{201C}Drift\u{201D}",
+                       subtitle: "Your first full riff. Press Play and follow the neck until it feels locked in.",
+                       kind: .tab(.drift)),
+            ]
+        case .bass:
+            lessons = [
+                Lesson(id: 1, title: "Reading a tab number",
+                       subtitle: "The lines are your four strings, lowest at the bottom. A number is the fret to press. Tap a number to hear it.",
+                       kind: .tab(.tabReadBass)),
+                Lesson(id: 2, title: "One string, climbing",
+                       subtitle: "Same string, higher frets, higher pitch. Tap each note, then press Play.",
+                       kind: .tab(.tabClimbBass)),
+                Lesson(id: 3, title: "Crossing strings",
+                       subtitle: "Now the line moves across the low three strings. Watch the neck as it plays.",
+                       kind: .tab(.tabCrossBass)),
+                Lesson(id: 4, title: "Locking with the beat",
+                       subtitle: "A repeating groove. Press Play and feel where the notes land.",
+                       kind: .tab(.tabGrooveBass)),
+                Lesson(id: 5, title: "Play the bassline",
+                       subtitle: "Your first full bassline. Press Play and follow the neck until it feels locked in.",
+                       kind: .tab(.bassline)),
+            ]
+        }
+        return LearningStage(
+            id: 2, number: "02", title: "Tabs",
+            subtitle: "Read tablature as fretboard positions · short riffs",
+            lessons: lessons)
+    }
 
     private static let chords = LearningStage(
         id: 3, number: "03", title: "Chords",
