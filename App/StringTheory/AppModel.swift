@@ -536,38 +536,104 @@ enum LearningPath {
             lessons = [
                 Lesson(id: 1, title: "Reading a chord diagram",
                        subtitle: "A chord diagram is the neck seen head on. A ring is an open string, an x is a string you do not play, and a dot is a finger. This is E major. Tap a dot to hear its note.",
-                       kind: .chords(["E"])),
+                       kind: .chords(["E"]),
+                       detail: LessonDetail(
+                           heading: "The diagram is the neck head on",
+                           paragraphs: [
+                               "Turn the neck to face you and that is the diagram. Vertical lines are strings, horizontal lines are frets, and a dot is a finger pressing there.",
+                               "A ring above a string means play it open, an x means do not play it at all. Reading those three marks is most of what you need to learn any new shape."
+                           ],
+                           bullets: [
+                               "Now you can hear the whole shape: press Play chord to strum it.",
+                               "The numbers off the diagram, when shown, tell you which finger to use."
+                           ])),
                 Lesson(id: 2, title: "E and Em",
                        subtitle: "Lift one finger off E and it becomes E minor. Step between them and listen to the third drop.",
-                       kind: .chords(["E", "Em"])),
+                       kind: .chords(["E", "Em"]),
+                       detail: LessonDetail(
+                           heading: "What makes a chord minor",
+                           paragraphs: [
+                               "Major and minor differ by one note, the third. Lower the third by a semitone and a bright major chord turns into a darker minor one.",
+                               "E to E minor is the clearest example because you only lift a single finger. Strum both and the drop in mood is the third moving down."
+                           ])),
                 Lesson(id: 3, title: "A and Am",
                        subtitle: "The A shape, major and minor. The lowered third is again what turns major into minor.",
-                       kind: .chords(["A", "Am"])),
+                       kind: .chords(["A", "Am"]),
+                       detail: LessonDetail(
+                           heading: "The same move, a new shape",
+                           paragraphs: [
+                               "A to A minor is the same idea as E to E minor: the third drops a semitone. Different shape, identical logic.",
+                               "Once you hear that the lowered third is what makes minor, you can find it in any chord instead of memorizing each pair separately."
+                           ])),
                 Lesson(id: 4, title: "D and Dm",
                        subtitle: "The D shape. Three strings carry the chord and the low two stay muted.",
-                       kind: .chords(["D", "Dm"])),
+                       kind: .chords(["D", "Dm"]),
+                       detail: LessonDetail(
+                           heading: "Partial chords",
+                           paragraphs: [
+                               "The D shapes only use the top four strings. The low two are left out on purpose, marked with an x, because they are not part of this voicing.",
+                               "Muting strings you do not want is a real skill. Resting a spare finger lightly against them keeps the chord clean."
+                           ])),
                 Lesson(id: 5, title: "G and C",
                        subtitle: "Two open staples. When you are ready, open the Chord Library to explore every shape, including F and Bm.",
                        kind: .chords(["G", "C"]),
-                       handoff: .chords),
+                       handoff: .chords,
+                       detail: LessonDetail(
+                           heading: "Workhorse chords",
+                           paragraphs: [
+                               "G and C show up in a huge share of songs, often right next to each other. Getting a clean change between them unlocks a lot of music.",
+                               "When these feel steady, the Chord Library has every other shape, including the barre chords F and B minor that let you move a shape anywhere."
+                           ],
+                           bullets: ["Open the Chord Library to strum and explore every voicing."])),
             ]
         case .bass:
             lessons = [
                 Lesson(id: 1, title: "Play the root",
                        subtitle: "On bass you anchor a chord by playing its root. This is a C chord: the cyan notes are the root, and the dots marked 3 and 5 fill it out. For now, find the cyan roots and tap them.",
-                       kind: .arpeggio(root: .c, isMinor: false)),
+                       kind: .arpeggio(root: .c, isMinor: false),
+                       detail: LessonDetail(
+                           heading: "The root is your anchor",
+                           paragraphs: [
+                               "Bass rarely plays full chords. Instead you play the chord's root, the note it is named after, and that single note tells the ear which chord it is.",
+                               "Get comfortable finding the root fast. Almost everything else on bass is built out from it."
+                           ],
+                           bullets: ["Press Play root, 3, 5 to hear the chord spelled out one note at a time."])),
                 Lesson(id: 2, title: "Find every root",
                        subtitle: "Move to G. The cyan root repeats up the neck and across strings. Find each cyan G and tap it. The dots marked 3 and 5 are the rest of the chord, coming up next.",
-                       kind: .arpeggio(root: .g, isMinor: false)),
+                       kind: .arpeggio(root: .g, isMinor: false),
+                       detail: LessonDetail(
+                           heading: "Roots repeat all over the neck",
+                           paragraphs: [
+                               "Every note exists in several places, so each root sits under your hand in more than one spot. Knowing the nearest one keeps your playing smooth.",
+                               "Same note, an octave up, is a common bass move: it adds energy without changing the harmony."
+                           ])),
                 Lesson(id: 3, title: "Root and fifth",
                        subtitle: "Root to fifth is the classic bass move. Play the cyan root, then the note marked 5, and back.",
-                       kind: .arpeggio(root: .c, isMinor: false)),
+                       kind: .arpeggio(root: .c, isMinor: false),
+                       detail: LessonDetail(
+                           heading: "The strongest pair",
+                           paragraphs: [
+                               "Root to fifth is the most stable jump in music and the backbone of countless basslines. The fifth supports the root without coloring the chord major or minor.",
+                               "On the neck the fifth usually sits right next door, one string up and a couple of frets over. That shape stays the same wherever you move it."
+                           ])),
                 Lesson(id: 4, title: "Add the third",
                        subtitle: "The third spells the rest of the chord. This is A minor, and the note marked 3 is the flattened third that makes it minor. Walk root, 3, 5.",
-                       kind: .arpeggio(root: .a, isMinor: true)),
+                       kind: .arpeggio(root: .a, isMinor: true),
+                       detail: LessonDetail(
+                           heading: "The third sets the mood",
+                           paragraphs: [
+                               "The third is the note that makes a chord major or minor. A flattened third is what gives this A minor its darker color.",
+                               "Walking root, third, fifth spells the whole chord with your bass alone. It is the seed of basslines that move instead of just holding the root."
+                           ])),
                 Lesson(id: 5, title: "Walk a I-IV-V",
                        subtitle: "This is C, the I chord, with its third and fifth marked. In C the IV and V are F and G. Use the cyan root as home and explore. There is no Chord Library on bass, so this is your sandbox.",
-                       kind: .arpeggio(root: .c, isMinor: false)),
+                       kind: .arpeggio(root: .c, isMinor: false),
+                       detail: LessonDetail(
+                           heading: "Three chords, one key",
+                           paragraphs: [
+                               "The I, IV, and V chords are the three most common in any key. In C they are C, F, and G, and together they harmonize a huge number of songs.",
+                               "Use the root as home and the third and fifth to move between chords. This is your sandbox: there is no Chord Library on bass because the neck itself is the tool."
+                           ])),
             ]
         }
         return LearningStage(
