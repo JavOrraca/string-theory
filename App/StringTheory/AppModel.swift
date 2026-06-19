@@ -315,6 +315,14 @@ enum TechniqueLesson: Hashable {
     case fretting  // pressing a string with the fingertip just behind the fret
 }
 
+/// An expandable "Learn more" deep-dive attached to a lesson: a heading, a few
+/// short paragraphs, and optional bullet cues. Plain data, rendered by the lesson.
+struct LessonDetail: Hashable {
+    let heading: String
+    let paragraphs: [String]
+    var bullets: [String] = []
+}
+
 struct Lesson: Identifiable, Hashable {
     let id: Int            // unique within its stage
     let title: String
@@ -323,6 +331,8 @@ struct Lesson: Identifiable, Hashable {
     /// When set, this lesson's forward button opens the named tool tab instead
     /// of just advancing or dismissing.
     var handoff: MainTab? = nil
+    /// An optional "Learn more" deep-dive shown under the interactive area.
+    var detail: LessonDetail? = nil
 }
 
 struct LearningStage: Identifiable, Hashable {

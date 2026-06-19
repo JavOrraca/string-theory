@@ -12,6 +12,7 @@ struct StageLessonsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var index = 0
     @State private var showSettings = false
+    @State private var showDetail = false
 
     private var lesson: Lesson { stage.lessons[min(index, stage.lessons.count - 1)] }
     private var isLastLesson: Bool { index >= stage.lessons.count - 1 }
@@ -21,8 +22,10 @@ struct StageLessonsView: View {
         ZStack {
             AppBackground()
             VStack(spacing: 0) {
-                content
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                ScrollView {
+                    content
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
                 footer
             }
         }
@@ -44,6 +47,7 @@ struct StageLessonsView: View {
                 : (stage.lessons.firstIndex { !model.isLessonComplete(stageID: stage.id, lessonID: $0.id) } ?? 0)
         }
         .onChange(of: lesson.id) {
+            showDetail = false
             model.stopRiff()
             model.stopBacking()
         }
@@ -116,9 +120,41 @@ struct StageLessonsView: View {
                     .lineSpacing(5)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
+
+            if let detail = lesson.detail {
+                DisclosureGroup(isExpanded: $showDetail) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(detail.paragraphs, id: \.self) { paragraph in
+                            Text(paragraph)
+                                .font(Typography.body(13))
+                                .foregroundStyle(Theme.Palette.text)
+                                .lineSpacing(4)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        ForEach(detail.bullets, id: \.self) { bullet in
+                            HStack(alignment: .top, spacing: 9) {
+                                Circle().fill(Theme.Palette.signalCyan)
+                                    .frame(width: 5, height: 5).padding(.top, 6)
+                                Text(bullet)
+                                    .font(Typography.body(13))
+                                    .foregroundStyle(Theme.Palette.textDim)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
+                } label: {
+                    Text(detail.heading)
+                        .font(Typography.display(14, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.phosphor)
+                }
+                .tint(Theme.Palette.phosphor)
+                .padding(.top, 4)
+            }
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
+        .padding(.bottom, 16)
     }
 
     // MARK: Footer
@@ -290,7 +326,8 @@ private struct TabLessonView: View {
                 markers: lessonMarkers,
                 onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity)
+            .frame(height: 230)
             .panel()
 
             VStack(alignment: .leading, spacing: 8) {
@@ -408,7 +445,7 @@ private struct ExploreLessonView: View {
             markers: markers,
             onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
         )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(height: 230)
         .panel()
     }
 }
@@ -442,7 +479,7 @@ private struct ScaleLessonView: View {
             markers: markers,
             onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
         )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(height: 290)
         .panel()
     }
 }
@@ -481,7 +518,7 @@ private struct BackingLessonView: View {
                 markers: markers,
                 onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(height: 290)
             .panel()
 
             backingLoop
@@ -572,7 +609,7 @@ private struct ChordsLessonView: View {
                 markers: chordMarkers(chord),
                 onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(height: 230)
             .panel()
 
             HStack(spacing: 12) {
