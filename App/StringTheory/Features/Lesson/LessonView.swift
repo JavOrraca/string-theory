@@ -107,6 +107,8 @@ struct StageLessonsView: View {
                     .id(lesson.id)
             case .arpeggio(let root, let isMinor):
                 ArpeggioLessonView(root: root, isMinor: isMinor)
+            case .technique(let technique):
+                TechniqueLessonView(lesson: technique)
             case .reading(let body):
                 Text(body)
                     .font(Typography.body(15))
@@ -163,7 +165,7 @@ struct StageLessonsView: View {
                     forwardButton
                 }
             }
-        case .reading, .explore, .scale, .chords, .arpeggio:
+        case .reading, .explore, .scale, .chords, .arpeggio, .technique:
             bottomBar { forwardButton }
         }
     }
@@ -652,6 +654,155 @@ private struct LessonDots: View {
                 .accessibilityLabel("Go to lesson \(i + 1)")
                 .accessibilityAddTraits(i == index ? [.isSelected] : [])
             }
+        }
+    }
+}
+
+// MARK: - Technique lesson content (drawn diagrams, Fretboard Basics)
+
+/// A beginner technique screen: a drawn diagram plus a short list of cues. No
+/// fretboard and no audio. `.holding` adapts for guitar versus bass.
+private struct TechniqueLessonView: View {
+    let lesson: TechniqueLesson
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Group {
+                switch lesson {
+                case .holding:  HoldingDiagram(instrument: model.instrument)
+                case .fretting: FrettingDiagram()
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 240)
+            .panel()
+
+            VStack(alignment: .leading, spacing: 9) {
+                ForEach(cues, id: \.self) { cue in
+                    HStack(alignment: .top, spacing: 9) {
+                        Circle().fill(Theme.Palette.phosphor)
+                            .frame(width: 5, height: 5).padding(.top, 6)
+                        Text(cue)
+                            .font(Typography.body(13))
+                            .foregroundStyle(Theme.Palette.textDim)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
+    }
+
+    private var cues: [String] {
+        switch lesson {
+        case .holding:
+            return model.instrument == .bass
+                ? ["Sit with the bass against your stomach, its waist on your strong-side leg.",
+                   "Let the neck point up and out, not flat across your body.",
+                   "Thumb rests behind the neck, roughly opposite your fingers; keep the hand loose.",
+                   "Your plucking hand floats over the strings near the pickups."]
+                : ["Sit with the guitar against your stomach, its waist on your strong-side leg.",
+                   "Angle the neck slightly up so your fretting wrist stays straight, not bent.",
+                   "Thumb rests behind the neck, roughly opposite your fingers.",
+                   "Your strumming hand floats over the sound hole or pickups."]
+        case .fretting:
+            return ["Press with the very tip of the finger, not the flat pad.",
+                    "Land just behind the fret, never on top of it.",
+                    "Keep the knuckle bent so the tip comes straight down.",
+                    "Press only until the note rings clean. No buzz is enough; white knuckles is too hard.",
+                    "Short nails let the fingertip stand up on the string."]
+        }
+    }
+}
+
+/// A schematic of the instrument at a playing angle, with the two hand zones
+/// marked. Tuned for clarity, not realism.
+private struct HoldingDiagram: View {
+    let instrument: Instrument
+
+    var body: some View {
+        Canvas { ctx, size in
+            let dim = GraphicsContext.Shading.color(Theme.Palette.textDim.opacity(0.55))
+            let phosphor = GraphicsContext.Shading.color(Theme.Palette.phosphor)
+            let cyan = GraphicsContext.Shading.color(Theme.Palette.signalCyan)
+            let w = size.width, h = size.height
+
+            // Body blob, lower-left.
+            let bodyCenter = CGPoint(x: w * 0.34, y: h * 0.66)
+            let bodyW = w * 0.30, bodyH = h * 0.40
+            let body = Path(ellipseIn: CGRect(x: bodyCenter.x - bodyW / 2, y: bodyCenter.y - bodyH / 2,
+                                              width: bodyW, height: bodyH))
+            ctx.stroke(body, with: dim, lineWidth: 2)
+
+            // Neck up to the upper-right.
+            let neckLength = (instrument == .bass ? 0.60 : 0.50) * w
+            let neckWidth: CGFloat = instrument == .bass ? 13 : 17
+            let start = CGPoint(x: bodyCenter.x + bodyW * 0.18, y: bodyCenter.y - bodyH * 0.18)
+            let angle = -0.5
+            let end = CGPoint(x: start.x + CoreGraphics.cos(angle) * neckLength,
+                              y: start.y + CoreGraphics.sin(angle) * neckLength)
+            var neck = Path(); neck.move(to: start); neck.addLine(to: end)
+            ctx.stroke(neck, with: phosphor, lineWidth: neckWidth)
+
+            // Hand zones: fretting near the neck end, plucking over the body.
+            func dot(_ p: CGPoint) { ctx.fill(Path(ellipseIn: CGRect(x: p.x - 8, y: p.y - 8, width: 16, height: 16)), with: cyan) }
+            let fretHand = CGPoint(x: start.x + CoreGraphics.cos(angle) * neckLength * 0.78,
+                                   y: start.y + CoreGraphics.sin(angle) * neckLength * 0.78 + 14)
+            let pluckHand = CGPoint(x: bodyCenter.x + bodyW * 0.05, y: bodyCenter.y)
+            dot(fretHand); dot(pluckHand)
+
+            ctx.draw(Text("neck up + out").font(Typography.mono(10)).foregroundColor(Theme.Palette.textDim),
+                     at: CGPoint(x: end.x - 4, y: end.y - 18))
+            ctx.draw(Text("fretting hand").font(Typography.mono(10)).foregroundColor(Theme.Palette.signalCyan),
+                     at: CGPoint(x: fretHand.x, y: fretHand.y + 18))
+            ctx.draw(Text("plucking hand").font(Typography.mono(10)).foregroundColor(Theme.Palette.signalCyan),
+                     at: CGPoint(x: pluckHand.x, y: pluckHand.y + 26))
+        }
+    }
+}
+
+/// A zoomed cross-section: a string over a fret, with a bent fingertip pressing
+/// just behind the fret. The cyan dot is the contact point.
+private struct FrettingDiagram: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let dim = GraphicsContext.Shading.color(Theme.Palette.textDim.opacity(0.6))
+            let phosphor = GraphicsContext.Shading.color(Theme.Palette.phosphor)
+            let cyan = GraphicsContext.Shading.color(Theme.Palette.signalCyan)
+            let w = size.width, h = size.height
+            let stringY = h * 0.62
+
+            // The string.
+            var stringPath = Path()
+            stringPath.move(to: CGPoint(x: w * 0.08, y: stringY))
+            stringPath.addLine(to: CGPoint(x: w * 0.92, y: stringY))
+            ctx.stroke(stringPath, with: dim, lineWidth: 2)
+
+            // Two frets (vertical ticks); the target fret is brighter.
+            func fret(_ x: CGFloat, bright: Bool) {
+                var p = Path(); p.move(to: CGPoint(x: x, y: stringY - 18)); p.addLine(to: CGPoint(x: x, y: stringY + 18))
+                ctx.stroke(p, with: bright ? phosphor : dim, lineWidth: bright ? 3 : 2)
+            }
+            let targetFretX = w * 0.58
+            fret(w * 0.30, bright: false)
+            fret(targetFretX, bright: true)
+
+            // The finger: a bent shape coming down just behind the target fret.
+            let contact = CGPoint(x: targetFretX - w * 0.07, y: stringY)
+            var finger = Path()
+            finger.move(to: CGPoint(x: contact.x - 36, y: stringY - 96))
+            finger.addQuadCurve(to: CGPoint(x: contact.x - 6, y: stringY - 30),
+                                control: CGPoint(x: contact.x - 34, y: stringY - 48))
+            finger.addQuadCurve(to: contact, control: CGPoint(x: contact.x - 2, y: stringY - 12))
+            ctx.stroke(finger, with: GraphicsContext.Shading.color(Theme.Palette.text), lineWidth: 14)
+
+            // Contact dot.
+            ctx.fill(Path(ellipseIn: CGRect(x: contact.x - 7, y: contact.y - 7, width: 14, height: 14)), with: cyan)
+
+            ctx.draw(Text("just behind the fret").font(Typography.mono(10)).foregroundColor(Theme.Palette.signalCyan),
+                     at: CGPoint(x: contact.x + 6, y: stringY + 26))
+            ctx.draw(Text("fret").font(Typography.mono(10)).foregroundColor(Theme.Palette.phosphor),
+                     at: CGPoint(x: targetFretX, y: stringY - 30))
         }
     }
 }
