@@ -1,10 +1,12 @@
 import SwiftUI
 import StringTheoryCore
 
-/// Plays through a stage's lessons one at a time. Each lesson fits the screen
-/// (no scrolling); finishing one shows a Completed state with Next / Back to
-/// Main, and completing a stage's lessons advances the path. A settings gear is
-/// in the top-right so tempo and setup are reachable from inside a lesson.
+/// Plays through a stage's lessons one at a time. The interactive area sits in a
+/// scroll view so an expanded "Learn more" deep-dive has room; collapsed, a lesson
+/// still reads as one screen, and the transport footer stays pinned below it. A
+/// back chevron and a tappable dot stepper move between lessons, so completed
+/// stages can be reopened and reviewed. A settings gear is in the top-right so
+/// tempo and setup are reachable from inside a lesson.
 struct StageLessonsView: View {
     let stage: LearningStage
 
