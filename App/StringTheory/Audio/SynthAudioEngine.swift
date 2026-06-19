@@ -198,6 +198,22 @@ final class SynthAudioEngine: AudioEngine {
         bank.add(.pluck(freq: frequency, dur: 0.9, peak: 0.22))
     }
 
+    func playChord(frequencies: [Double], strumGap: Double) {
+        startIfNeeded()
+        guard !frequencies.isEmpty else { return }
+        // Lower per-voice peak than a single tap so six summed plucks do not clip.
+        if strumGap <= 0 {
+            for freq in frequencies { bank.add(.pluck(freq: freq, dur: 1.4, peak: 0.14)) }
+            return
+        }
+        Task { @MainActor [weak self] in
+            for freq in frequencies {
+                self?.bank.add(.pluck(freq: freq, dur: 1.4, peak: 0.14))
+                try? await Task.sleep(for: .seconds(strumGap))
+            }
+        }
+    }
+
     // MARK: Riff
 
     func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double) {

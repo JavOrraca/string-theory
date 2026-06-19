@@ -12,6 +12,9 @@ protocol AudioEngine: AnyObject {
 
     /// Plays a single note once (tap-to-hear).
     func playNote(frequency: Double)
+    /// Plays several frequencies as one chord. `strumGap` staggers the voices so
+    /// a downstrum sounds; pass 0 for a block chord.
+    func playChord(frequencies: [Double], strumGap: Double)
     func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double)
     func stopRiff()
     func playBacking(key: Note, scale: ScaleType, barDuration: Double)
@@ -25,6 +28,7 @@ final class NoopAudioEngine: AudioEngine {
     var onRiffStep: (@MainActor (Int) -> Void)?
     var onBackingChord: (@MainActor (Int) -> Void)?
     func playNote(frequency: Double) {}
+    func playChord(frequencies: [Double], strumGap: Double) {}
     func playRiff(_ riff: Riff, tuning: Tuning, stepDuration: Double) {}
     func stopRiff() {}
     func playBacking(key: Note, scale: ScaleType, barDuration: Double) {}
