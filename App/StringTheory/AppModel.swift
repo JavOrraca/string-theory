@@ -128,6 +128,19 @@ final class AppModel {
         audio.playNote(frequency: freqAt(base: tuning.strings[string].frequency, fret: fret))
     }
 
+    /// Strums a guitar chord voicing (always guitar, matching the diagrams).
+    func playChord(_ chord: Chord) {
+        audio.playChord(frequencies: chordVoicingFrequencies(chord), strumGap: 0.028)
+    }
+
+    /// Sounds a triad's root, third, and fifth in sequence (the bass arpeggio
+    /// lessons). Bass voices an octave lower than guitar.
+    func arpeggiate(root: Note, isMinor: Bool) {
+        let octave = instrument == .bass ? 2 : 3
+        let freqs = chordTones(root: root, isMinor: isMinor).map { $0.frequency(octave: octave) }
+        audio.playChord(frequencies: freqs, strumGap: 0.16)
+    }
+
     // MARK: Learning path (persisted progress)
 
     func isLessonComplete(stageID: Int, lessonID: Int) -> Bool {
