@@ -10,7 +10,7 @@ enum AudioSessionController {
         do {
             let session = AVAudioSession.sharedInstance()
             let options: AVAudioSession.CategoryOptions =
-                category == .playAndRecord ? [.defaultToSpeaker, .allowBluetooth] : []
+                category == .playAndRecord ? [.defaultToSpeaker, .allowBluetoothHFP] : []
             try session.setCategory(category, mode: .default, options: options)
             try session.setActive(true)
         } catch {
