@@ -29,6 +29,9 @@
 		C18BF33E7F489E5F1460930A /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1AF6873491F281BFF0BB919 /* OnboardingUITests.swift */; };
 		CBD7A802572408F97348014B /* ScaleExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437CB20105E9F3AC15001AF6 /* ScaleExplorerView.swift */; };
 		CEC1E0941879004CFE808660 /* SynthAudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4597E4E65C48751D0594147C /* SynthAudioEngine.swift */; };
+		BB01000000000000000000D1 /* AudioSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01000000000000000000C1 /* AudioSessionController.swift */; };
+		BB02000000000000000000D2 /* TunerEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA02000000000000000000C2 /* TunerEngine.swift */; };
+		BB03000000000000000000D3 /* TunerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA03000000000000000000C3 /* TunerView.swift */; };
 		DD1D426A6F5C9BB4F42349C9 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 185AA5E9478C498224BECC4A /* AudioEngine.swift */; };
 		E0D7208E92303B474BF59F14 /* StringTheoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4208835A3CAA8F9DB5E630A9 /* StringTheoryApp.swift */; };
 		E1D25FABD75E8D2270E261F9 /* OFL-JetBrainsMono.txt in Resources */ = {isa = PBXBuildFile; fileRef = A08C4EB84FFDDF5B3138FE98 /* OFL-JetBrainsMono.txt */; };
@@ -66,6 +69,9 @@
 		421E855AC76A26993725F268 /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
 		437CB20105E9F3AC15001AF6 /* ScaleExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleExplorerView.swift; sourceTree = "<group>"; };
 		4597E4E65C48751D0594147C /* SynthAudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthAudioEngine.swift; sourceTree = "<group>"; };
+		AA01000000000000000000C1 /* AudioSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionController.swift; sourceTree = "<group>"; };
+		AA02000000000000000000C2 /* TunerEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerEngine.swift; sourceTree = "<group>"; };
+		AA03000000000000000000C3 /* TunerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerView.swift; sourceTree = "<group>"; };
 		480E23097F35EEA4E4D8F10E /* StringTheoryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StringTheoryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AC07B06D1342BCAE84BC212 /* StringTheoryCore */ = {isa = PBXFileReference; lastKnownFileType = folder; path = StringTheoryCore; sourceTree = SOURCE_ROOT; };
 		5BDD46A9002C19DF60F781D8 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -128,8 +134,17 @@
 				329042C2C8520D93B368B9E1 /* Scales */,
 				01AE0B5C7E1C4A5ACE268F6E /* Settings */,
 				C4268C41184981A60ADD303A /* Solo */,
+				CC01000000000000000000E1 /* Tuner */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		CC01000000000000000000E1 /* Tuner */ = {
+			isa = PBXGroup;
+			children = (
+				AA03000000000000000000C3 /* TunerView.swift */,
+			);
+			path = Tuner;
 			sourceTree = "<group>";
 		};
 		329042C2C8520D93B368B9E1 /* Scales */ = {
@@ -268,7 +283,9 @@
 			isa = PBXGroup;
 			children = (
 				185AA5E9478C498224BECC4A /* AudioEngine.swift */,
+				AA01000000000000000000C1 /* AudioSessionController.swift */,
 				4597E4E65C48751D0594147C /* SynthAudioEngine.swift */,
+				AA02000000000000000000C2 /* TunerEngine.swift */,
 			);
 			path = Audio;
 			sourceTree = "<group>";
@@ -461,6 +478,9 @@
 				F7C0EF009B8D0C653A20109F /* SoloPracticeView.swift in Sources */,
 				E0D7208E92303B474BF59F14 /* StringTheoryApp.swift in Sources */,
 				CEC1E0941879004CFE808660 /* SynthAudioEngine.swift in Sources */,
+				BB01000000000000000000D1 /* AudioSessionController.swift in Sources */,
+				BB02000000000000000000D2 /* TunerEngine.swift in Sources */,
+				BB03000000000000000000D3 /* TunerView.swift in Sources */,
 				8342EB3222203D96B1DAA746 /* Theme.swift in Sources */,
 				B05011CE00E1A346403394F0 /* Typography.swift in Sources */,
 				EDB8EFF4EB845C2E20E3EA04 /* ViewModifiers.swift in Sources */,
