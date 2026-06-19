@@ -18,6 +18,7 @@ private struct Stage {
 struct HomeView: View {
     @Environment(AppModel.self) private var model
     @State private var showSettings = false
+    @State private var showTuner = false
 
     private var rows: [Stage] {
         model.stages.map { stage in
@@ -38,7 +39,9 @@ struct HomeView: View {
                 AppBackground()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        HeaderSection(overallPercent: model.overallPercent, onSettings: { showSettings = true })
+                        HeaderSection(overallPercent: model.overallPercent,
+                                      onSettings: { showSettings = true },
+                                      onTuner: { showTuner = true })
                             .padding(.bottom, 8)
                         StageListSection(stages: rows)
                     }
@@ -49,6 +52,19 @@ struct HomeView: View {
             }
             .navigationBarHidden(true)
             .sheet(isPresented: $showSettings) { SettingsView() }
+            .sheet(isPresented: $showTuner) {
+                NavigationStack {
+                    TunerView()
+                        .navigationTitle("Tuner")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showTuner = false }
+                                    .foregroundStyle(Theme.Palette.phosphor)
+                            }
+                        }
+                }
+            }
         }
     }
 }
@@ -58,6 +74,7 @@ struct HomeView: View {
 private struct HeaderSection: View {
     let overallPercent: Int
     let onSettings: () -> Void
+    let onTuner: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -65,6 +82,13 @@ private struct HeaderSection: View {
                 Text("STANDARD TUNING · 440Hz")
                     .sectionLabel()
                 Spacer()
+                Button(action: onTuner) {
+                    Image(systemName: "tuningfork")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Theme.Palette.textDim)
+                        .frame(width: 40, height: 28, alignment: .trailing)
+                }
+                .accessibilityLabel("Tuner")
                 Button(action: onSettings) {
                     Image(systemName: "slider.horizontal.3")
                         .font(.system(size: 16))

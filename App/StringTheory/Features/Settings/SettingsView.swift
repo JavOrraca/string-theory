@@ -48,6 +48,29 @@ struct SettingsView: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 6)
                     }
+                    group("TOOLS") {
+                        NavigationLink {
+                            TunerView()
+                                .navigationTitle("Tuner")
+                                .navigationBarTitleDisplayMode(.inline)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "tuningfork")
+                                    .foregroundStyle(Theme.Palette.phosphor)
+                                Text("Tuner")
+                                    .font(Typography.display(15, weight: .semibold))
+                                    .foregroundStyle(Theme.Palette.text)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(Theme.Palette.textDim)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .padding(.horizontal, 8)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Open the tuner")
+                    }
                     Text("Instrument and handedness drive every diagram. Tempo sets the riff and backing speed.")
                         .font(Typography.body(13))
                         .foregroundStyle(Theme.Palette.textDim)
