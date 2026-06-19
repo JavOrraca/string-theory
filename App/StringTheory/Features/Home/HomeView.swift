@@ -179,8 +179,13 @@ private struct StageRow: View {
                         .accessibilityLabel("Stage \(stage.number): \(stage.title). \(stage.pct == 0 ? "Ready to start" : "In progress, \(stage.pct) percent complete"). Tap to begin.")
                     }
                 case .done:
-                    StageCard(stage: stage)
-                        .accessibilityLabel("Stage \(stage.number): \(stage.title). Complete.")
+                    if let learning = model.stages.first(where: { $0.id == stage.id }) {
+                        NavigationLink(destination: StageLessonsView(stage: learning)) {
+                            StageCard(stage: stage)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Stage \(stage.number): \(stage.title). Complete. Tap to review.")
+                    }
                 case .locked:
                     StageCard(stage: stage)
                         .accessibilityLabel("Stage \(stage.number): \(stage.title). Locked.")
