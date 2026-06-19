@@ -299,6 +299,7 @@ enum LessonKind: Hashable {
     case backing(key: Note, type: ScaleType)
     case chords([String])
     case arpeggio(root: Note, isMinor: Bool)
+    case technique(TechniqueLesson)
 }
 
 /// A guided fretboard exploration used by the Fretboard Basics lessons.
@@ -306,6 +307,12 @@ enum ExploreLesson: Hashable {
     case openStrings
     case fretNumbers
     case findNote(Note)
+}
+
+/// A beginner technique screen in Fretboard Basics, drawn as a SwiftUI diagram.
+enum TechniqueLesson: Hashable {
+    case holding   // how the instrument sits and where the hands go
+    case fretting  // pressing a string with the fingertip just behind the fret
 }
 
 struct Lesson: Identifiable, Hashable {
@@ -336,15 +343,21 @@ enum LearningPath {
 
     private static let fretboardBasics = LearningStage(
         id: 1, number: "01", title: "Fretboard Basics",
-        subtitle: "String names · fret numbers · note at each position",
+        subtitle: "Holding the instrument · fretting · string names · note positions",
         lessons: [
-            Lesson(id: 1, title: "Open strings",
+            Lesson(id: 1, title: "Holding the instrument",
+                   subtitle: "Before any notes, get comfortable. Here is how the instrument sits and where your hands go.",
+                   kind: .technique(.holding)),
+            Lesson(id: 2, title: "Fretting a note",
+                   subtitle: "Press the string against the fret with your fingertip, just hard enough to ring clean.",
+                   kind: .technique(.fretting)),
+            Lesson(id: 3, title: "Open strings",
                    subtitle: "These are your open strings, low to high. Tap each one to hear it.",
                    kind: .explore(.openStrings)),
-            Lesson(id: 2, title: "Fret numbers",
+            Lesson(id: 4, title: "Fret numbers",
                    subtitle: "Frets count up from the nut, each one a semitone higher. Tap a fret to hear it.",
                    kind: .explore(.fretNumbers)),
-            Lesson(id: 3, title: "Find a note",
+            Lesson(id: 5, title: "Find a note",
                    subtitle: "The same note lives in many places. Here is every A in the first few frets. Tap any to hear it.",
                    kind: .explore(.findNote(.a))),
         ])
