@@ -441,7 +441,9 @@ struct TunerReading: Sendable, Equatable {
 @MainActor
 protocol TunerEngine: AnyObject {
     var onReading: (@MainActor (TunerReading) -> Void)? { get set }
-    func start()
+    /// The tuning to map detected pitches against is passed at start time, so the
+    /// engine never has to capture AppModel (which would be illegal in init).
+    func start(tuning: Tuning)
     func stop()
 }
 
@@ -449,7 +451,7 @@ protocol TunerEngine: AnyObject {
 @MainActor
 final class NoopTunerEngine: TunerEngine {
     var onReading: (@MainActor (TunerReading) -> Void)?
-    func start() {}
+    func start(tuning: Tuning) {}
     func stop() {}
 }
 
@@ -495,21 +497,16 @@ final class MicTunerEngine: TunerEngine {
     var onReading: (@MainActor (TunerReading) -> Void)?
 
     private let engine = AVAudioEngine()
-    private let tuningProvider: () -> Tuning
     private var running = false
 
-    init(tuning: @escaping () -> Tuning) {
-        self.tuningProvider = tuning
-    }
-
-    func start() {
+    func start(tuning: Tuning) {
         guard !running else { return }
         let input = engine.inputNode
         let format = input.inputFormat(forBus: 0)
         let sampleRate = format.sampleRate
         guard sampleRate > 0 else { return }            // no input route available
 
-        let analyzer = TunerAnalyzer(sampleRate: sampleRate, windowSize: 4096, tuning: tuningProvider())
+        let analyzer = TunerAnalyzer(sampleRate: sampleRate, windowSize: 4096, tuning: tuning)
         let forward = Self.forwarder { [weak self] reading in self?.onReading?(reading) }
 
         input.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
@@ -590,11 +587,11 @@ Add the engine next to the audio engine:
 In `init`, after the line `audio.onBackingChord = { ... }`, add:
 
 ```swift
-        tuner = MicTunerEngine(tuning: { [weak self] in self?.tuning ?? .guitar })
+        tuner = MicTunerEngine()
         tuner.onReading = { [weak self] reading in self?.tunerReading = reading }
 ```
 
-Move the `tuner` assignment before its `onReading` use; since `tuner` is a `let`, assign it before the `audio.onRiffStep` block if the compiler complains about use-before-init. Concretely, place `tuner = MicTunerEngine(...)` as the first statement after `completedLessons = ...`, and set `tuner.onReading` after the `audio` callbacks.
+`tuner` is a `let`, so assign `tuner = MicTunerEngine()` as the first statement after `completedLessons = ...` (it captures nothing, so this is always legal), and set `tuner.onReading` after the `audio` callbacks, where `self` is fully initialized so the `[weak self]` capture is allowed.
 
 - [ ] **Step 3: Add the tuner transport**
 
@@ -617,7 +614,7 @@ Add a new `// MARK: Tuner` section after the Solo transport:
         stopRiff()
         stopBacking()
         AudioSessionController.activate(.playAndRecord)
-        if granted { tuner.start() }
+        if granted { tuner.start(tuning: tuning) }
     }
 
     func endTuning() {
