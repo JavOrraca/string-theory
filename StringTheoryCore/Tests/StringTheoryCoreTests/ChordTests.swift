@@ -83,4 +83,13 @@ struct ChordTests {
         // G, the fifth, on the D string (index 2, fret 5).
         #expect(markers.contains { $0.string == 2 && $0.fret == 5 && $0.note == .g && $0.label == "5" })
     }
+
+    @Test("chord voicing frequencies skip muted strings, low to high")
+    func voicingFrequencies() {
+        let c = Chord.named("C")!                // [-1, 3, 2, 0, 1, 0]
+        let freqs = chordVoicingFrequencies(c)
+        #expect(freqs.count == 5)                // low E muted, five sound
+        #expect(abs(freqs.first! - 130.81) < 0.5)   // A string, 3rd fret = C3
+        #expect(abs(freqs.last! - 329.63) < 0.5)    // high e open
+    }
 }

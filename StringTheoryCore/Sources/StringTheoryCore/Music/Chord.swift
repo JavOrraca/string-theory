@@ -78,6 +78,16 @@ public func chordSpan(_ chord: Chord) -> FretSpan {
     return FretSpan(min: low, max: high)
 }
 
+/// The sounding frequency (Hz) of each non-muted string in a chord voicing,
+/// low string to high, for strum ordering and chord playback. Uses the same
+/// guitar tuning and `freqAt` math as the diagram, so it stays consistent.
+public func chordVoicingFrequencies(_ chord: Chord, tuning: Tuning = .guitar) -> [Double] {
+    chord.frets.enumerated().compactMap { stringIndex, fret in
+        guard fret >= 0 else { return nil }            // -1 = muted
+        return freqAt(base: tuning.strings[stringIndex].frequency, fret: fret)
+    }
+}
+
 // MARK: - Chord tones and arpeggio markers
 
 /// The root, third, and fifth of a triad. The third is minor (3 semitones above
