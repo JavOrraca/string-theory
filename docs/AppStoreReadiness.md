@@ -20,6 +20,7 @@ A checklist for shipping String Theory. Anything that needs your Apple Developer
 - The privacy manifest is at `App/StringTheory/Resources/PrivacyInfo.xcprivacy`.
 - In App Store Connect, set the privacy label to "Data Not Collected" and keep it in sync with the manifest.
 - You still need a privacy policy URL. App Store Connect asks for one even when nothing is collected.
+- The app includes a tuner that uses the microphone for on-device pitch detection only. Audio is never recorded, stored, or transmitted; it is read live from the input buffer and discarded after each pitch reading. The mic usage string is set in `App/StringTheory/Info.plist` (`NSMicrophoneUsageDescription`). This does not change the privacy manifest or the data-collection answer: `PrivacyInfo.xcprivacy` stays no-collection and no-tracking. For the App Store privacy questionnaire, answer microphone access as "used for app functionality (tuning), not collected."
 
 ## Assets
 

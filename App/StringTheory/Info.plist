@@ -20,6 +20,8 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>String Theory uses the microphone only to detect the pitch of your strings for tuning. Audio is never recorded, stored, or sent.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>SpaceGrotesk-Variable.ttf</string>
