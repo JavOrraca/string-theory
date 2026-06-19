@@ -229,6 +229,7 @@ final class AppModel {
     func beginTuning() {
         guard !isTuning else { return }
         isTuning = true
+        tunerReading = .idle   // clear any reading left over from a prior session
         AVAudioApplication.requestRecordPermission { [weak self] granted in
             Task { @MainActor in self?.handleMicPermission(granted) }
         }
