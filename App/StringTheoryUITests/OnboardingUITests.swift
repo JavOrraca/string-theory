@@ -24,8 +24,9 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
     }
 
-    /// Walks the three Fretboard Basics lessons end to end: each explore lesson
-    /// renders, Next advances, and Finish returns to the path. Exercises
+    /// Walks the five Fretboard Basics lessons end to end: the two technique
+    /// screens, then the three explore lessons. Each renders, Next advances, and
+    /// Finish returns to the path. Exercises TechniqueLessonView and
     /// ExploreLessonView and the lesson player at runtime.
     @MainActor
     func testFretboardBasicsLessonFlow() {
@@ -43,15 +44,23 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
         app.staticTexts["Fretboard Basics"].tap()
 
-        // Lesson 1 of 3.
+        // Lesson 1 of 5 — the holding-technique screen.
+        XCTAssertTrue(app.staticTexts["Holding the instrument"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+
+        // Lesson 2 of 5 — the fretting-technique screen.
+        XCTAssertTrue(app.staticTexts["Fretting a note"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+
+        // Lesson 3 of 5.
         XCTAssertTrue(app.staticTexts["Open strings"].waitForExistence(timeout: 3))
         app.buttons["Next"].tap()
 
-        // Lesson 2 of 3.
+        // Lesson 4 of 5.
         XCTAssertTrue(app.staticTexts["Fret numbers"].waitForExistence(timeout: 3))
         app.buttons["Next"].tap()
 
-        // Lesson 3 of 3 — the last one shows Finish.
+        // Lesson 5 of 5 — the last one shows Finish.
         XCTAssertTrue(app.staticTexts["Find a note"].waitForExistence(timeout: 3))
         app.buttons["Finish"].tap()
 
@@ -251,9 +260,13 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Which hand frets?"].waitForExistence(timeout: 3))
         app.buttons["Enter the path"].tap()
 
-        // Complete Fretboard Basics (three lessons).
+        // Complete Fretboard Basics (five lessons: two technique, three explore).
         XCTAssertTrue(app.staticTexts["Your Path"].waitForExistence(timeout: 3))
         app.staticTexts["Fretboard Basics"].tap()
+        XCTAssertTrue(app.staticTexts["Holding the instrument"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Fretting a note"].waitForExistence(timeout: 3))
+        app.buttons["Next"].tap()
         XCTAssertTrue(app.staticTexts["Open strings"].waitForExistence(timeout: 3))
         app.buttons["Next"].tap()
         XCTAssertTrue(app.staticTexts["Fret numbers"].waitForExistence(timeout: 3))
