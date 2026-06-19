@@ -95,16 +95,9 @@ final class MicTunerEngine: TunerEngine {
 
         let analyzer = TunerAnalyzer(sampleRate: sampleRate, windowSize: 4096, tuning: tuning)
         let forward = Self.forwarder { [weak self] reading in self?.onReading?(reading) }
-        let queue = detectQueue
 
-        input.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
-            // Realtime tap thread: only buffer and copy. Detection is dispatched
-            // off this thread so a slow window cannot stall audio input.
-            guard let window = analyzer.appendAndExtractWindow(Self.monoSamples(from: buffer)) else { return }
-            queue.async {
-                forward(analyzer.analyze(window))
-            }
-        }
+        input.installTap(onBus: 0, bufferSize: 4096, format: format,
+                         block: Self.makeTapBlock(analyzer: analyzer, queue: detectQueue, forward: forward))
 
         do {
             try engine.start()
@@ -120,6 +113,26 @@ final class MicTunerEngine: TunerEngine {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         running = false
+    }
+
+    /// Builds the realtime tap block in a `nonisolated` context so it is not
+    /// inferred main-actor-isolated. Otherwise the Swift 6 runtime traps when the
+    /// realtime audio thread (`RealtimeMessenger`) invokes it: a closure formed in
+    /// the `@MainActor` `start(tuning:)` and handed to the non-Sendable
+    /// `AVAudioNodeTapBlock` carries main-actor isolation, and the inserted
+    /// isolation check fires `dispatch_assert_queue` off the main queue. This is the
+    /// same hazard `SynthAudioEngine`'s render-block factory avoids. The block
+    /// captures only Sendable values and never reads main-actor state: it buffers
+    /// and copies on the audio thread, then dispatches the heavy detection to `queue`.
+    nonisolated private static func makeTapBlock(
+        analyzer: TunerAnalyzer,
+        queue: DispatchQueue,
+        forward: @escaping @Sendable (TunerReading) -> Void
+    ) -> AVAudioNodeTapBlock {
+        { buffer, _ in
+            guard let window = analyzer.appendAndExtractWindow(monoSamples(from: buffer)) else { return }
+            queue.async { forward(analyzer.analyze(window)) }
+        }
     }
 
     nonisolated private static func monoSamples(from buffer: AVAudioPCMBuffer) -> [Float] {

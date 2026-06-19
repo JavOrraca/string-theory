@@ -1,9 +1,28 @@
 import XCTest
+import AVFoundation
 import StringTheoryCore
 @testable import StringTheory
 
 @MainActor
 final class AppModelTests: XCTestCase {
+
+    /// Reproduces the tuner crash. The mic tap closure runs on the realtime audio
+    /// thread (`RealtimeMessenger`). If that closure is inferred main-actor-isolated
+    /// (because `AVAudioNodeTapBlock` is non-Sendable and it is formed in the
+    /// `@MainActor` `start(tuning:)`), the Swift runtime traps with a libdispatch
+    /// queue assertion the moment a mic buffer is delivered. Mic is granted on the
+    /// simulator out of band via `simctl privacy ... grant microphone`.
+    func testTunerMicTapDoesNotTrapOnAudioThread() {
+        AudioSessionController.activate(.playAndRecord)
+        let tuner = MicTunerEngine()
+        tuner.start(tuning: .guitar)
+        // Let the mic deliver several windows on the realtime tap thread.
+        let exp = expectation(description: "mic buffers flow without trapping")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { exp.fulfill() }
+        wait(for: [exp], timeout: 6)
+        tuner.stop()
+        AudioSessionController.activate(.playback)
+    }
 
     /// A model backed by a clean, isolated UserDefaults suite.
     private func freshModel() -> AppModel {
