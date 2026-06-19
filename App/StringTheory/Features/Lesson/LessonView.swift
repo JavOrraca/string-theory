@@ -38,7 +38,10 @@ struct StageLessonsView: View {
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .onAppear {
-            index = stage.lessons.firstIndex { !model.isLessonComplete(stageID: stage.id, lessonID: $0.id) } ?? 0
+            let allDone = stage.lessons.allSatisfy { model.isLessonComplete(stageID: stage.id, lessonID: $0.id) }
+            index = allDone
+                ? 0
+                : (stage.lessons.firstIndex { !model.isLessonComplete(stageID: stage.id, lessonID: $0.id) } ?? 0)
         }
         .onChange(of: lesson.id) {
             model.stopRiff()
@@ -60,14 +63,23 @@ struct StageLessonsView: View {
 
     @ViewBuilder private var content: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
+            HStack(spacing: 10) {
+                if index > 0 {
+                    Button { back() } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 15, weight: .semibold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Theme.Palette.phosphor)
+                    .accessibilityLabel("Previous lesson")
+                }
                 Text("STAGE \(stage.number)").sectionLabel()
                 Spacer()
                 if stage.lessons.count > 1 {
-                    Text("LESSON \(index + 1) / \(stage.lessons.count)")
-                        .font(Typography.mono(10, weight: .semibold))
-                        .tracking(1.0)
-                        .foregroundStyle(Theme.Palette.textDim)
+                    LessonDots(count: stage.lessons.count, index: index) { target in
+                        model.stopRiff(); model.stopBacking()
+                        index = target
+                    }
                 }
             }
 
@@ -191,6 +203,13 @@ struct StageLessonsView: View {
         model.stopRiff()
         model.stopBacking()
         if isLastLesson { dismiss() } else { index += 1 }
+    }
+
+    private func back() {
+        guard index > 0 else { return }
+        model.stopRiff()
+        model.stopBacking()
+        index -= 1
     }
 
     /// Marks the lesson complete, stops audio, pops back to the path, and
@@ -607,6 +626,32 @@ private struct ArpeggioLessonView: View {
             }
             .buttonStyle(SecondaryButtonStyle())
             .accessibilityLabel("Play the arpeggio")
+        }
+    }
+}
+
+// MARK: - Lesson stepper
+
+/// A tappable row of dots for jumping between a stage's lessons. The current
+/// lesson glows; any lesson can be revisited.
+private struct LessonDots: View {
+    let count: Int
+    let index: Int
+    let onSelect: (Int) -> Void
+
+    var body: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<count, id: \.self) { i in
+                Button { onSelect(i) } label: {
+                    Circle()
+                        .fill(i == index ? Theme.Palette.phosphor : Theme.Palette.textDim.opacity(0.4))
+                        .frame(width: 7, height: 7)
+                        .glow(i == index ? Theme.Palette.phosphor : .clear, radius: i == index ? 5 : 0)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Go to lesson \(i + 1)")
+                .accessibilityAddTraits(i == index ? [.isSelected] : [])
+            }
         }
     }
 }
