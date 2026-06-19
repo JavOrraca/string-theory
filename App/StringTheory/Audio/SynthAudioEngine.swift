@@ -180,12 +180,14 @@ final class SynthAudioEngine: AudioEngine {
 
     private func startIfNeeded() {
         guard !started else { return }
+        #if os(iOS)
+        // Do not downgrade a live record session: when the tuner has set
+        // .playAndRecord, leave it so reference tones still mix with the mic.
+        if AVAudioSession.sharedInstance().category != .playAndRecord {
+            AudioSessionController.activate(.playback)
+        }
+        #endif
         do {
-            #if os(iOS)
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default)
-            try session.setActive(true)
-            #endif
             try engine.start()
             started = true
         } catch {
