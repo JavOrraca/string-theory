@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import Observation
 import StringTheoryCore
@@ -35,6 +36,13 @@ final class AppModel {
     private(set) var isPlayingBacking = false
     private(set) var backingChordIndex: Int?
 
+    // Tuner. Session-only; owned here so the one session owner is the one
+    // publisher of tuner data.
+    private(set) var isTuning = false
+    private(set) var tunerReading: TunerReading = .idle
+    /// nil until the mic has been asked for; then true (granted) or false (denied).
+    private(set) var micGranted: Bool?
+
     /// How many full passes of the riff count as "practiced enough" for a lesson.
     let riffRepetitionGoal = 2
     var riffGoalReached: Bool { riffRepetitions >= riffRepetitionGoal }
@@ -44,6 +52,7 @@ final class AppModel {
     static let defaultTempo = 110
 
     @ObservationIgnored private let audio: AudioEngine = SynthAudioEngine()
+    @ObservationIgnored private let tuner: TunerEngine
     @ObservationIgnored private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard) {
@@ -53,6 +62,7 @@ final class AppModel {
         isLeftHanded = defaults.bool(forKey: Keys.isLeftHanded)
         tempo = (defaults.object(forKey: Keys.tempo) as? Int) ?? Self.defaultTempo
         completedLessons = Set(defaults.stringArray(forKey: Keys.completedLessons) ?? [])
+        tuner = MicTunerEngine()
 
         audio.onRiffStep = { [weak self] step in
             guard let self else { return }
@@ -60,6 +70,7 @@ final class AppModel {
             self.riffStep = step
         }
         audio.onBackingChord = { [weak self] index in self?.backingChordIndex = index }
+        tuner.onReading = { [weak self] reading in self?.tunerReading = reading }
     }
 
     // MARK: Setup (persisted)
@@ -198,6 +209,39 @@ final class AppModel {
     func setSoloScale(_ scale: ScaleType) {
         stopBacking()
         soloScale = scale
+    }
+
+    // MARK: Tuner
+
+    func beginTuning() {
+        guard !isTuning else { return }
+        isTuning = true
+        AVAudioApplication.requestRecordPermission { [weak self] granted in
+            Task { @MainActor in self?.handleMicPermission(granted) }
+        }
+    }
+
+    private func handleMicPermission(_ granted: Bool) {
+        micGranted = granted
+        guard isTuning else { return }              // user may have left already
+        stopRiff()
+        stopBacking()
+        AudioSessionController.activate(.playAndRecord)
+        if granted { tuner.start(tuning: tuning) }
+    }
+
+    func endTuning() {
+        guard isTuning else { return }
+        isTuning = false
+        tuner.stop()
+        tunerReading = .idle
+        AudioSessionController.activate(.playback)
+    }
+
+    /// Plays the open-string reference tone for `stringIndex` on the current tuning.
+    func playReferenceTone(stringIndex: Int) {
+        guard tuning.strings.indices.contains(stringIndex) else { return }
+        audio.playNote(frequency: tuning.strings[stringIndex].frequency)
     }
 
     // MARK: Persistence
