@@ -357,19 +357,66 @@ enum LearningPath {
         lessons: [
             Lesson(id: 1, title: "Holding the instrument",
                    subtitle: "Before any notes, get comfortable. Here is how the instrument sits and where your hands go.",
-                   kind: .technique(.holding)),
+                   kind: .technique(.holding),
+                   detail: LessonDetail(
+                       heading: "Why posture matters",
+                       paragraphs: [
+                           "Good posture is not about looking right, it is about lasting. A bent wrist or a hunched back tires you out in minutes and is where most beginners quietly give up.",
+                           "Keep the instrument pulled in against your body so it does not slide, and let the neck ride a little up and out. That angle is what lets your fretting wrist stay straight instead of cranked."
+                       ],
+                       bullets: [
+                           "If your wrist aches, raise the neck angle before you blame your hand.",
+                           "A strap, even sitting down, takes the weight off your fretting hand."
+                       ])),
             Lesson(id: 2, title: "Fretting a note",
                    subtitle: "Press the string against the fret with your fingertip, just hard enough to ring clean.",
-                   kind: .technique(.fretting)),
+                   kind: .technique(.fretting),
+                   detail: LessonDetail(
+                       heading: "How hard to press",
+                       paragraphs: [
+                           "New players almost always press too hard. You need far less force than you think. Press, pluck, and the moment the note rings clean with no buzz, that is exactly enough.",
+                           "Place the fingertip just behind the fret, not in the middle of the gap and never on the metal itself. Right behind the fret is where the least pressure gives the cleanest note."
+                       ],
+                       bullets: [
+                           "Buzz usually means you are too far from the fret, not pressing too softly.",
+                           "A muffled, dead note usually means the finger is touching a neighboring string.",
+                           "Sore fingertips are normal at first and build into calluses within a couple of weeks."
+                       ])),
             Lesson(id: 3, title: "Open strings",
                    subtitle: "These are your open strings, low to high. Tap each one to hear it.",
-                   kind: .explore(.openStrings)),
+                   kind: .explore(.openStrings),
+                   detail: LessonDetail(
+                       heading: "Why these notes",
+                       paragraphs: [
+                           "Standard tuning, low to high, is E A D G B E on guitar and E A D G on bass. Most neighboring strings are a fourth apart, which keeps shapes compact and repeatable up the neck.",
+                           "On guitar the one exception is G to B, a third, which is why a few chord shapes feel different on the top strings. Learning the open-string names cold pays off the moment you start naming frets."
+                       ],
+                       bullets: [
+                           "A common memory hook: Eddie Ate Dynamite, Good Bye Eddie.",
+                           "The lowest and highest guitar strings are both E, two octaves apart."
+                       ])),
             Lesson(id: 4, title: "Fret numbers",
                    subtitle: "Frets count up from the nut, each one a semitone higher. Tap a fret to hear it.",
-                   kind: .explore(.fretNumbers)),
+                   kind: .explore(.fretNumbers),
+                   detail: LessonDetail(
+                       heading: "Frets are semitones",
+                       paragraphs: [
+                           "Each fret raises the pitch by one semitone, the smallest step in Western music. Twelve frets up and you are back to the same note one octave higher.",
+                           "That is the whole logic of the neck: it is the same twelve notes repeating. Once you can count semitones from an open string, you can name any fret without memorizing them one by one."
+                       ],
+                       bullets: [
+                           "The dots on the neck mark frets 3, 5, 7, 9, and a double dot at 12.",
+                           "Fret 12 is the octave, where the pattern starts over."
+                       ])),
             Lesson(id: 5, title: "Find a note",
                    subtitle: "The same note lives in many places. Here is every A in the first few frets. Tap any to hear it.",
-                   kind: .explore(.findNote(.a))),
+                   kind: .explore(.findNote(.a)),
+                   detail: LessonDetail(
+                       heading: "One note, many places",
+                       paragraphs: [
+                           "The same pitch shows up in several spots because the strings overlap in range. That is not clutter, it is choice: you can play a phrase where your hand already is instead of jumping around.",
+                           "Seeing every A at once trains the map in your head. Later, finding the nearest root under your fingers is what makes scales and chords feel reachable instead of memorized."
+                       ])),
         ])
 
     private static func tabs(for instrument: Instrument) -> LearningStage {
