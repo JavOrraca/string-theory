@@ -426,37 +426,101 @@ enum LearningPath {
             lessons = [
                 Lesson(id: 1, title: "Reading a tab number",
                        subtitle: "The lines are your strings, lowest at the bottom. A number is the fret to press on that string. Tap a number to hear it.",
-                       kind: .tab(.tabReadGuitar)),
+                       kind: .tab(.tabReadGuitar),
+                       detail: LessonDetail(
+                           heading: "What tab does and does not tell you",
+                           paragraphs: [
+                               "Tab is a map of where to put your fingers: which string, which fret. It is fast to read and needs no theory, which is why so much guitar and bass music is shared this way.",
+                               "What plain tab leaves out is rhythm. It shows you the notes in order but not how long each lasts, so you still need to know the tune in your ear or hear it played."
+                           ],
+                           bullets: [
+                               "0 means play the open string; a number means fret that number.",
+                               "Bottom line is the lowest string, which trips up readers who expect the opposite."
+                           ])),
                 Lesson(id: 2, title: "One string, climbing",
                        subtitle: "Same string, higher frets, higher pitch. Tap each note, then press Play.",
-                       kind: .tab(.tabClimbGuitar)),
+                       kind: .tab(.tabClimbGuitar),
+                       detail: LessonDetail(
+                           heading: "Pitch and fret distance",
+                           paragraphs: [
+                               "Moving up the same string is the clearest way to feel that higher fret equals higher pitch. Each step is one semitone, and twelve of them is an octave.",
+                               "Notice the frets get physically closer together as you climb. The spacing is not even on purpose; it is what keeps every step the same musical distance."
+                           ])),
                 Lesson(id: 3, title: "Crossing strings",
                        subtitle: "Now the riff jumps between the low two strings. Watch the neck light up as it plays.",
-                       kind: .tab(.tabCrossGuitar)),
+                       kind: .tab(.tabCrossGuitar),
+                       detail: LessonDetail(
+                           heading: "Same note, two strings",
+                           paragraphs: [
+                               "Jumping between strings lets you reach notes without sliding your whole hand. A phrase that would be a big stretch on one string sits under four fingers when you use two.",
+                               "The fifth fret of a lower string is usually the same pitch as the next string open. That overlap is the trick behind playing in one comfortable position."
+                           ])),
                 Lesson(id: 4, title: "Timing and repeats",
                        subtitle: "A short pattern that loops. Press Play and let it come around a few times.",
-                       kind: .tab(.tabGrooveGuitar)),
+                       kind: .tab(.tabGrooveGuitar),
+                       detail: LessonDetail(
+                           heading: "Loops and feel",
+                           paragraphs: [
+                               "Most parts are short patterns that repeat. Once a loop is under your fingers, your attention is free for timing and tone instead of the next note.",
+                               "Play it slow until it is even, then let it come around a few times before you speed up. Steady and slow beats fast and ragged every time."
+                           ])),
                 Lesson(id: 5, title: "Play \u{201C}Drift\u{201D}",
                        subtitle: "Your first full riff. Press Play and follow the neck until it feels locked in.",
-                       kind: .tab(.drift)),
+                       kind: .tab(.drift),
+                       detail: LessonDetail(
+                           heading: "Putting it together",
+                           paragraphs: [
+                               "A full riff strings the moves you just practiced into one phrase: climbing, crossing, and repeating. Follow the lit note on the neck and let your hand learn the path.",
+                               "Lock it in slowly. The goal is not speed, it is that the riff plays itself while you listen."
+                           ])),
             ]
         case .bass:
             lessons = [
                 Lesson(id: 1, title: "Reading a tab number",
                        subtitle: "The lines are your four strings, lowest at the bottom. A number is the fret to press. Tap a number to hear it.",
-                       kind: .tab(.tabReadBass)),
+                       kind: .tab(.tabReadBass),
+                       detail: LessonDetail(
+                           heading: "Bass tab, four lines",
+                           paragraphs: [
+                               "Bass tab works the same as guitar tab with four lines instead of six. The bottom line is your low E, the thickest string, and a number is the fret to press.",
+                               "Bass usually carries one note at a time, so reading it is mostly about which string and when. Rhythm still lives in your ear, not on the page."
+                           ])),
                 Lesson(id: 2, title: "One string, climbing",
                        subtitle: "Same string, higher frets, higher pitch. Tap each note, then press Play.",
-                       kind: .tab(.tabClimbBass)),
+                       kind: .tab(.tabClimbBass),
+                       detail: LessonDetail(
+                           heading: "Feeling the low end",
+                           paragraphs: [
+                               "Climbing one string on bass makes the octave obvious because the low notes are so physical. Twelve frets up is the same note, one octave higher.",
+                               "Let each note ring its full length. On bass, how long a note sustains is as much the part as the note itself."
+                           ])),
                 Lesson(id: 3, title: "Crossing strings",
                        subtitle: "Now the line moves across the low three strings. Watch the neck as it plays.",
-                       kind: .tab(.tabCrossBass)),
+                       kind: .tab(.tabCrossBass),
+                       detail: LessonDetail(
+                           heading: "Staying in position",
+                           paragraphs: [
+                               "Moving across the low strings keeps your hand in one place while the line jumps around. That economy is what lets bass lines stay relaxed at speed.",
+                               "A note on a lower string at the fifth fret matches the next string open. Use that to find the easiest path, not the obvious one."
+                           ])),
                 Lesson(id: 4, title: "Locking with the beat",
                        subtitle: "A repeating groove. Press Play and feel where the notes land.",
-                       kind: .tab(.tabGrooveBass)),
+                       kind: .tab(.tabGrooveBass),
+                       detail: LessonDetail(
+                           heading: "Where the note lands",
+                           paragraphs: [
+                               "Bass is a rhythm instrument as much as a pitched one. A groove is about exactly when each note hits, not just which note it is.",
+                               "Play with the kick drum in mind. Landing right on the beat, or just behind it, is what makes a line feel solid."
+                           ])),
                 Lesson(id: 5, title: "Play the bassline",
                        subtitle: "Your first full bassline. Press Play and follow the neck until it feels locked in.",
-                       kind: .tab(.bassline)),
+                       kind: .tab(.bassline),
+                       detail: LessonDetail(
+                           heading: "Holding it down",
+                           paragraphs: [
+                               "A full bassline is your first taste of the job: keep time, outline the chord, leave space. Follow the neck and let the pattern settle into your hand.",
+                               "Once it loops without thought, try locking even tighter to the beat. That pocket is the whole point of the instrument."
+                           ])),
             ]
         }
         return LearningStage(
