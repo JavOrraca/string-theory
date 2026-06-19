@@ -648,20 +648,50 @@ enum LearningPath {
         lessons: [
             Lesson(id: 1, title: "What a scale is",
                    subtitle: "A scale is the set of notes that fit a key. This is E minor pentatonic. The cyan note is the root. Tap any note to hear it.",
-                   kind: .scale(key: .e, type: .minorPentatonic, showDegrees: false)),
+                   kind: .scale(key: .e, type: .minorPentatonic, showDegrees: false),
+                   detail: LessonDetail(
+                       heading: "A scale is a filter",
+                       paragraphs: [
+                           "A scale is just the set of notes that belong to a key. Play inside it and things sound right; the scale is doing the work of keeping you in tune with the song.",
+                           "The minor pentatonic is five notes per octave, which is why it feels so forgiving. Fewer notes means fewer ways to sound wrong."
+                       ])),
             Lesson(id: 2, title: "The root and the degrees",
                    subtitle: "Every note shows its scale degree, and the root is 1. Tap up from the root to hear the degrees climb.",
-                   kind: .scale(key: .e, type: .minorPentatonic, showDegrees: true)),
+                   kind: .scale(key: .e, type: .minorPentatonic, showDegrees: true),
+                   detail: LessonDetail(
+                       heading: "Numbering the notes",
+                       paragraphs: [
+                           "Naming each note by its distance from the root, 1 through 5 here, lets you talk about a scale without naming the key. The same numbers work in every key.",
+                           "The root, degree 1, is home base. Phrases that start or end on it sound settled, which is your first handle on making a melody resolve."
+                       ])),
             Lesson(id: 3, title: "Minor vs major pentatonic",
                    subtitle: "Same key, brighter sound. This is E major pentatonic. Compare it to the minor shape you just saw.",
-                   kind: .scale(key: .e, type: .majorPentatonic, showDegrees: true)),
+                   kind: .scale(key: .e, type: .majorPentatonic, showDegrees: true),
+                   detail: LessonDetail(
+                       heading: "Same notes, different home",
+                       paragraphs: [
+                           "Major and minor pentatonic in the same key share a shape but center on a different note. Move the root and the bright sound turns moody, or back again.",
+                           "Hearing the difference is more useful than memorizing it. Major tends to sound sunny, minor tends to sound serious."
+                       ])),
             Lesson(id: 4, title: "Same shape, new key",
                    subtitle: "Move the whole pattern up and the key changes with it. This is A minor pentatonic: same shape, new root.",
-                   kind: .scale(key: .a, type: .minorPentatonic, showDegrees: true)),
+                   kind: .scale(key: .a, type: .minorPentatonic, showDegrees: true),
+                   detail: LessonDetail(
+                       heading: "Movable shapes",
+                       paragraphs: [
+                           "Guitar and bass scale shapes have no open strings to tie them down, so the whole pattern slides up or down to change key. One shape covers every key.",
+                           "Learn where the root sits in the shape and you can drop that scale into any song by sliding to the right fret."
+                       ])),
             Lesson(id: 5, title: "Explore on your own",
                    subtitle: "Now pick any key and scale yourself and watch the whole neck redraw.",
                    kind: .scale(key: .a, type: .minorPentatonic, showDegrees: true),
-                   handoff: .scales),
+                   handoff: .scales,
+                   detail: LessonDetail(
+                       heading: "Make it yours",
+                       paragraphs: [
+                           "Pick any key and scale and watch the neck redraw. Poking around like this is how the patterns stop being shapes and start being sounds you know.",
+                           "The Scale Explorer is open ended on purpose. Try a key, hum along, and notice which notes pull at your ear."
+                       ])),
         ])
 
     private static let improvisation = LearningStage(
@@ -670,19 +700,49 @@ enum LearningPath {
         lessons: [
             Lesson(id: 1, title: "Safe notes",
                    subtitle: "Stage 4's scale is now your safety net. Every lit note in A minor pentatonic fits this backing track. Tap any one to hear it.",
-                   kind: .scale(key: .a, type: .minorPentatonic, showDegrees: true)),
+                   kind: .scale(key: .a, type: .minorPentatonic, showDegrees: true),
+                   detail: LessonDetail(
+                       heading: "A net under your solo",
+                       paragraphs: [
+                           "Every lit note fits the backing track, so you cannot land on a wrong one. That is the point of starting with a scale: it frees you to listen instead of worry.",
+                           "Soloing is not about playing many notes. It is about choosing a few good ones, and the safe-notes net is what lets you choose freely."
+                       ])),
             Lesson(id: 2, title: "Hear the backing",
                    subtitle: "Press Play backing. Four chords loop, the one playing now lights up, and its root pulses on the neck.",
-                   kind: .backing(key: .a, type: .minorPentatonic)),
+                   kind: .backing(key: .a, type: .minorPentatonic),
+                   detail: LessonDetail(
+                       heading: "Listening to the loop",
+                       paragraphs: [
+                           "Four chords cycle under you, and the one playing now lights up with its root pulsing on the neck. Knowing where you are in the loop is half of soloing.",
+                           "Before you play a note, just listen for a pass or two. Feel where the loop turns around; that is where your phrases will want to breathe."
+                       ])),
             Lesson(id: 3, title: "Target the root",
                    subtitle: "As each chord comes around, find its pulsing root and tap it. Landing on the root always sounds resolved.",
-                   kind: .backing(key: .a, type: .minorPentatonic)),
+                   kind: .backing(key: .a, type: .minorPentatonic),
+                   detail: LessonDetail(
+                       heading: "Landing in the right place",
+                       paragraphs: [
+                           "When you end a phrase on the current chord's root, it sounds resolved no matter what came before. Chasing that pulsing root is the fastest way to sound intentional.",
+                           "You do not have to play only roots. Aim for them as landing spots and wander in between."
+                       ])),
             Lesson(id: 4, title: "Short phrases",
                    subtitle: "Play three or four safe notes, then leave space. Short phrases with rests say more than a long scramble.",
-                   kind: .backing(key: .a, type: .minorPentatonic)),
+                   kind: .backing(key: .a, type: .minorPentatonic),
+                   detail: LessonDetail(
+                       heading: "Space is part of the music",
+                       paragraphs: [
+                           "Three or four notes followed by a rest say more than a constant stream. The silence gives your phrases shape and gives the listener time to catch them.",
+                           "Think of it like talking: short sentences with pauses, not one breathless run."
+                       ])),
             Lesson(id: 5, title: "Take a solo",
                    subtitle: "Press Play backing and improvise over a full loop using only safe notes. When you are ready, open Solo Practice to keep going.",
                    kind: .backing(key: .a, type: .minorPentatonic),
-                   handoff: .solo),
+                   handoff: .solo,
+                   detail: LessonDetail(
+                       heading: "Putting it together",
+                       paragraphs: [
+                           "Press play and improvise over the full loop using only safe notes. Target roots, leave space, and repeat ideas so the solo feels like it is going somewhere.",
+                           "When you want more room, Solo Practice lets you change key and scale and keep going for as long as you like."
+                       ])),
         ])
 }
