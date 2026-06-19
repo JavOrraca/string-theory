@@ -30,9 +30,11 @@ final class NoopTunerEngine: TunerEngine {
     func stop() {}
 }
 
-/// Accumulates mic samples on the audio thread and runs the core detector when a
-/// full window is ready. Audio-thread safe via a lock. `@unchecked Sendable`
-/// because the lock guards the only mutable state.
+/// Accumulates mic samples and turns a full window into a reading. The two steps
+/// are split on purpose: `appendAndExtractWindow` is cheap (a locked append plus
+/// a copy) and is the only part called from the realtime audio tap; `analyze`
+/// runs the heavy YIN detector and is called off that thread on a background
+/// queue. `@unchecked Sendable` because the lock guards the only mutable state.
 final class TunerAnalyzer: @unchecked Sendable {
     private let lock = NSLock()
     private var buffer: [Float] = []
@@ -46,16 +48,22 @@ final class TunerAnalyzer: @unchecked Sendable {
         self.tuning = tuning
     }
 
-    /// Append frames; once a window is full, detect and clear. Returns a reading
-    /// (voiced or idle) when it analyzed, or nil while still filling.
-    func append(_ frames: [Float]) -> TunerReading? {
+    /// Append frames from the audio tap; once a full window has accumulated,
+    /// return it and clear the buffer. Returns nil while still filling. Cheap
+    /// enough for the realtime tap thread: no pitch detection happens here.
+    func appendAndExtractWindow(_ frames: [Float]) -> [Float]? {
         lock.lock()
+        defer { lock.unlock() }
         buffer.append(contentsOf: frames)
-        guard buffer.count >= windowSize else { lock.unlock(); return nil }
+        guard buffer.count >= windowSize else { return nil }
         let window = buffer
         buffer.removeAll(keepingCapacity: true)
-        lock.unlock()
+        return window
+    }
 
+    /// Run the pitch detector on a full window and map it to a reading. Heavy;
+    /// call off the audio thread. Returns `.idle` when the window is unvoiced.
+    func analyze(_ window: [Float]) -> TunerReading {
         guard let hz = detectPitchHz(window, sampleRate: sampleRate) else {
             return .idle
         }
@@ -73,6 +81,10 @@ final class MicTunerEngine: TunerEngine {
 
     private let engine = AVAudioEngine()
     private var running = false
+    /// Serial queue for pitch detection, so the heavy YIN pass runs off the
+    /// realtime tap thread. Serial means windows are analyzed one at a time;
+    /// detection is far shorter than a window, so it never falls behind.
+    private let detectQueue = DispatchQueue(label: "com.javierorraca.stringtheory.tuner.detect", qos: .userInitiated)
 
     func start(tuning: Tuning) {
         guard !running else { return }
@@ -83,10 +95,15 @@ final class MicTunerEngine: TunerEngine {
 
         let analyzer = TunerAnalyzer(sampleRate: sampleRate, windowSize: 4096, tuning: tuning)
         let forward = Self.forwarder { [weak self] reading in self?.onReading?(reading) }
+        let queue = detectQueue
 
         input.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
-            let frames = Self.monoSamples(from: buffer)
-            if let reading = analyzer.append(frames) { forward(reading) }
+            // Realtime tap thread: only buffer and copy. Detection is dispatched
+            // off this thread so a slow window cannot stall audio input.
+            guard let window = analyzer.appendAndExtractWindow(Self.monoSamples(from: buffer)) else { return }
+            queue.async {
+                forward(analyzer.analyze(window))
+            }
         }
 
         do {

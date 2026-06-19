@@ -153,7 +153,6 @@ final class SynthAudioEngine: AudioEngine {
     private let bank = VoiceBank()
     private let sampleRate: Double = 44_100
     private var sourceNode: AVAudioSourceNode?
-    private var started = false
 
     private var riffTask: Task<Void, Never>?
     private var backingTask: Task<Void, Never>?
@@ -178,8 +177,13 @@ final class SynthAudioEngine: AudioEngine {
         }
     }
 
+    /// Starts the engine if it is not already running. Keyed off the engine's own
+    /// `isRunning`, not a one-shot flag, so playback recovers if the OS stops the
+    /// engine on an audio-session category or route change (for example after the
+    /// tuner switches to `.playAndRecord` and back). The session is (re)activated
+    /// only on this restart path, so the common per-note case is a single check.
     private func startIfNeeded() {
-        guard !started else { return }
+        guard !engine.isRunning else { return }
         #if os(iOS)
         // Do not downgrade a live record session: when the tuner has set
         // .playAndRecord, leave it so reference tones still mix with the mic.
@@ -189,7 +193,6 @@ final class SynthAudioEngine: AudioEngine {
         #endif
         do {
             try engine.start()
-            started = true
         } catch {
             print("SynthAudioEngine failed to start: \(error)")
         }
