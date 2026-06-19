@@ -16,7 +16,9 @@ struct TunerReading: Sendable, Equatable {
 @MainActor
 protocol TunerEngine: AnyObject {
     var onReading: (@MainActor (TunerReading) -> Void)? { get set }
-    func start()
+    /// The tuning to map detected pitches against is passed at start time, so the
+    /// engine never has to capture AppModel (which would be illegal in init).
+    func start(tuning: Tuning)
     func stop()
 }
 
@@ -24,7 +26,7 @@ protocol TunerEngine: AnyObject {
 @MainActor
 final class NoopTunerEngine: TunerEngine {
     var onReading: (@MainActor (TunerReading) -> Void)?
-    func start() {}
+    func start(tuning: Tuning) {}
     func stop() {}
 }
 
@@ -70,21 +72,16 @@ final class MicTunerEngine: TunerEngine {
     var onReading: (@MainActor (TunerReading) -> Void)?
 
     private let engine = AVAudioEngine()
-    private let tuningProvider: () -> Tuning
     private var running = false
 
-    init(tuning: @escaping () -> Tuning) {
-        self.tuningProvider = tuning
-    }
-
-    func start() {
+    func start(tuning: Tuning) {
         guard !running else { return }
         let input = engine.inputNode
         let format = input.inputFormat(forBus: 0)
         let sampleRate = format.sampleRate
         guard sampleRate > 0 else { return }            // no input route available
 
-        let analyzer = TunerAnalyzer(sampleRate: sampleRate, windowSize: 4096, tuning: tuningProvider())
+        let analyzer = TunerAnalyzer(sampleRate: sampleRate, windowSize: 4096, tuning: tuning)
         let forward = Self.forwarder { [weak self] reading in self?.onReading?(reading) }
 
         input.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
