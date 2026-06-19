@@ -554,11 +554,21 @@ private struct ChordsLessonView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .panel()
 
-            HStack(spacing: 8) {
-                Text("NOTES").sectionLabel()
-                Text(soundedNotes.map(\.name).joined(separator: " · "))
-                    .font(Typography.mono(13, weight: .semibold))
-                    .foregroundStyle(Theme.Palette.signalCyan)
+            HStack(spacing: 12) {
+                Button { model.playChord(chord) } label: {
+                    Text("▶  Play chord")
+                }
+                .buttonStyle(SecondaryButtonStyle())
+                .accessibilityLabel("Play the \(chord.name) chord")
+
+                Spacer(minLength: 0)
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("NOTES").sectionLabel()
+                    Text(soundedNotes.map(\.name).joined(separator: " · "))
+                        .font(Typography.mono(13, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.signalCyan)
+                }
             }
         }
         .onAppear {
@@ -580,14 +590,23 @@ private struct ArpeggioLessonView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        FretboardView(
-            geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12,
-                                        startFret: 0, isLeftHanded: model.isLeftHanded),
-            openNotes: model.openNotes,
-            markers: arpeggioMarkers(instrument: model.instrument, root: root, isMinor: isMinor, frets: 12),
-            onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .panel()
+        VStack(alignment: .leading, spacing: 12) {
+            FretboardView(
+                geometry: FretboardGeometry(stringCount: model.stringCount, fretCount: 12,
+                                            startFret: 0, isLeftHanded: model.isLeftHanded),
+                openNotes: model.openNotes,
+                markers: arpeggioMarkers(instrument: model.instrument, root: root, isMinor: isMinor, frets: 12),
+                onTapPosition: { string, fret in model.playNote(string: string, fret: fret) }
+            )
+            .frame(maxWidth: .infinity)
+            .frame(height: 290)
+            .panel()
+
+            Button { model.arpeggiate(root: root, isMinor: isMinor) } label: {
+                Text("▶  Play root · 3 · 5")
+            }
+            .buttonStyle(SecondaryButtonStyle())
+            .accessibilityLabel("Play the arpeggio")
+        }
     }
 }

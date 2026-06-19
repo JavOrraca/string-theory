@@ -91,6 +91,12 @@ struct ChordLibraryView: View {
             )
             .frame(height: 190)
             .accessibilityLabel("Chord diagram for \(chord.name)")
+
+            Button { model.playChord(chord) } label: {
+                Text("▶  Play chord")
+            }
+            .buttonStyle(SecondaryButtonStyle())
+            .accessibilityLabel("Play the \(chord.name) chord")
         }
         .padding(18)
         .background(
